@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebDeck 管理台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --accent-color: #005eaa;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px 40px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .btn-launch {
+            padding: 10px 24px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 94, 170, 0.2);
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: white;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .readme-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: stretch;
+            justify-content: center;
+            z-index: 20000;
+            padding: 28px;
+        }
+
+        .readme-modal.show {
+            display: flex;
+        }
+
+        .readme-panel {
+            width: min(1080px, 100%);
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(0, 94, 170, 0.12);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .readme-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(180deg, rgba(240, 247, 255, 0.95), rgba(255, 255, 255, 0.95));
+        }
+
+        .readme-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .readme-close {
+            border: none;
+            background: transparent;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1.6rem;
+            line-height: 1;
+            padding: 0 6px;
+        }
+
+        .readme-close:hover {
+            color: var(--accent-color);
+        }
+
+        .readme-body {
+            flex: 1;
+            overflow: auto;
+            padding: 28px 34px 40px;
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+
+        .readme-body h1,
+        .readme-body h2,
+        .readme-body h3,
+        .readme-body h4 {
+            color: var(--accent-color);
+            margin: 1.2em 0 0.5em;
+            line-height: 1.3;
+        }
+
+        .readme-body h1 {
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        .readme-body h2 {
+            font-size: 1.45rem;
+        }
+
+        .readme-body h3 {
+            font-size: 1.18rem;
+        }
+
+        .readme-body p {
+            margin: 0.7em 0;
+        }
+
+        .readme-body ul,
+        .readme-body ol {
+            margin: 0.7em 0 1em 1.4em;
+        }
+
+        .readme-body li {
+            margin: 0.35em 0;
+        }
+
+        .readme-body code {
+            font-family: Consolas, 'Courier New', monospace;
+            background: #eef5ff;
+            color: #0f3d75;
+            padding: 0.12em 0.4em;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .readme-body pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px 18px;
+            border-radius: 14px;
+            overflow: auto;
+            margin: 1em 0;
+        }
+
+        .readme-body pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .readme-body strong {
+            color: #0f172a;
+        }
+
+        .readme-body hr {
+            border: none;
+            height: 1px;
+            background: var(--border-color);
+            margin: 1.4em 0;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 350px;
+            min-width: 250px;
+            max-width: 50vw;
+            resize: horizontal;
+            background: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .create-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .create-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .create-form input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .create-form button {
+            padding: 0 15px;
+            background: var(--surface-color);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .create-form button:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .folder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .folder-card {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface-color);
+        }
+
+        .folder-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .folder-card.active {
+            border-color: var(--accent-color);
+            border-left: 5px solid var(--accent-color);
+            background: #f0f7ff;
+        }
+
+        .folder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .folder-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex: 1;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .folder-name:hover {
+            background: rgba(0, 94, 170, 0.1);
+            color: var(--accent-color);
+        }
+
+        .folder-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed var(--accent-color);
+        }
+
+        .sub-items {
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 2px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sub-item {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+
+        .sub-item-label {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sub-item:hover {
+            background: #f1f5f9;
+            color: var(--accent-color);
+        }
+
+        .sub-item.active {
+            background: #e0f2fe;
+            color: var(--accent-color);
+            font-weight: bold;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 5px; /* Offset the border width to keep it aligned */
+        }
+
+        .sub-item.dragging-file {
+            opacity: 0.5;
+            background: #e0f2fe;
+            border: 1px dashed var(--accent-color);
+        }
+
+        .sub-item::before {
+            content: "📄";
+            font-size: 0.8rem;
+        }
+
+        .visibility-toggle {
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-light);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .visibility-toggle.is-on {
+            color: #047857;
+            border-color: #86efac;
+            background: #ecfdf5;
+        }
+
+        .visibility-toggle.is-off {
+            color: #b45309;
+            border-color: #fcd34d;
+            background: #fffbeb;
+        }
+
+        .visibility-toggle:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent-color);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .delete-btn {
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            color: #b91c1c;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-1px);
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .add-page-btn {
+            border: 1px solid var(--accent-color);
+            background: var(--surface-color);
+            color: var(--accent-color);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .add-page-btn:hover {
+            transform: translateY(-1px);
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropzone-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            background: var(--surface-color);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .dropzone-wrapper.dragover {
+            border-color: var(--accent-color);
+            background: #f0f7ff;
+            transform: scale(1.02);
+        }
+
+        .dropzone-wrapper.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .dropzone-icon {
+            font-size: 4rem;
+            opacity: 0.2;
+            margin-bottom: 15px;
+        }
+
+        .dropzone-text {
+            font-size: 1.5rem;
+            color: var(--text-light);
+            font-weight: bold;
+        }
+
+        .dropzone-sub {
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        #toast.error {
+            background: #ef4444;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+        }
+    </style>
+  <script type="module" crossorigin src="./assets/index-BJuTWtUm.js"></script>
+</head>
+<body>
+    <header>
+        <h1>WebDeck 管理台</h1>
+        <div class="btn-group">
+            <button id="openReadmeBtn" class="btn-secondary">📝 查看 README</button>
+            <button id="shutdownBtn" class="btn-secondary" style="color: #ef4444; border-color: #fca5a5; background: #fff5f5;">🛑 关闭服务</button>
+            <button id="openDistBtn" class="btn-secondary">📂 打开 dist 目录</button>
+            <button id="clearDistBtn" class="btn-secondary">🧹 清空 dist</button>
+            <button id="saveStandaloneBtn" class="btn-launch" style="background:#8b5cf6; box-shadow: 0 4px 12px rgba(139,92,246,0.3);">💾 导出离线项目到 dist</button>
+            <a href="ppt.html" class="btn-launch" target="_blank">▶ 启动预览</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3 style="margin-top:0;">章节结构</h3>
+            <div class="create-form">
+                <input type="text" id="newFolderName" placeholder="输入章节名，例如：研究总结">
+                <button id="createFolderBtn">添加</button>
+            </div>
+            <div class="folder-list" id="folderList">
+                <div style="text-align:center; color:var(--text-light); padding:20px;">加载中...</div>
+            </div>
+
+            <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-color); font-size:0.85rem; color:var(--text-light);">
+                <p>📌 <b>使用说明：</b></p>
+                <p>1. 在左侧创建章节，点击名称可重命名。</p>
+                <p>2. 选中章节后，把 HTML 文件拖到右侧上传区域。</p>
+                <p>3. 点击右上角“导出离线项目到 dist”。</p>
+                <p>4. 导出后把整个项目文件夹发给别人，对方直接打开其中的 <b>index.html</b> 即可。</p>
+                <p>5. 点击“查看 README”会在当前浏览器页面里渲染项目说明文档。</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <h2 id="targetFolderDisplay" style="margin-top:0; color:var(--accent-color);">👉 请先在左侧选择一个章节</h2>
+            <div id="dropzone" class="dropzone-wrapper disabled">
+                <div class="dropzone-icon">🗂</div>
+                <div class="dropzone-text" id="dropzoneText">拖拽 HTML 文件到这里</div>
+                <div class="dropzone-sub">系统会自动把文件加入当前选中的章节</div>
+            </div>
+            <iframe id="previewIframe" sandbox="allow-scripts" style="display:none; flex:1; width:100%; border:1px solid var(--border-color); border-radius:16px; background:white; box-shadow: 0 4px 12px rgba(0,0,0,0.05);"></iframe>
+        </main>
+    </div>
+
+    <!-- 增加新建页面弹窗 -->
+    <div id="addPageModal" class="readme-modal" aria-hidden="true">
+        <div class="readme-panel" style="max-width: 800px;">
+            <div class="readme-header">
+                <div class="readme-title">📝 新建 HTML 代码页面 - <span id="addPageFolderSpan"></span></div>
+                <button id="closeAddPageBtn" class="readme-close" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="readme-body" style="display:flex; flex-direction:column; gap: 15px;">
+                <div>
+                    <label style="font-weight:bold; color:var(--text-main); display:block; margin-bottom:5px;">页面名称</label>
+                    <input type="text" id="addPageName" placeholder="例如: 01_项目介绍 (无需添加 .html 后缀)" style="width:100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column;">
+                    <label style="font-weight:bold; color:var(--text-main); display:block; margin-bottom:5px;">粘贴 HTML 代码</label>
+                    <div id="addPageContentContainer" style="flex:1; min-height: 250px; border: 1px solid var(--border-color); border-radius: 6px; overflow:hidden; width:100%; box-sizing: border-box;"></div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top:5px;">
+                    <button class="btn-secondary" id="cancelAddPageBtn">取消</button>
+                    <button class="btn-launch" id="confirmAddPageBtn">💾 保存页面</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">操作成功</div>
+
+    <!-- 统一风格的自定义输入弹窗 (代替 prompt) -->
+    <div id="customPromptModal" class="readme-modal" aria-hidden="true" style="z-index: 12000;">
+        <div class="readme-panel" style="max-width: 400px; padding: 25px;">
+            <div class="readme-header" style="border-bottom:none; padding-bottom:5px; margin-bottom:10px;">
+                <div class="readme-title" id="customPromptTitle" style="font-size: 1.25rem;">标题</div>
+            </div>
+            <div class="readme-body" style="display:flex; flex-direction:column; gap: 15px; padding: 0;">
+                <input type="text" id="customPromptInput" style="width:100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 1rem; outline:none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-color)'" onblur="this.style.borderColor='var(--border-color)'">
+                <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top:5px;">
+                    <button class="btn-secondary" id="customPromptCancelBtn">取消</button>
+                    <button class="btn-launch" id="customPromptConfirmBtn">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统一风格的确认弹窗 (代替 confirm) -->
+    <div id="customConfirmModal" class="readme-modal" aria-hidden="true" style="z-index: 12000;">
+        <div class="readme-panel" style="max-width: 400px; padding: 25px;">
+            <div class="readme-header" style="border-bottom:none; padding-bottom:5px; margin-bottom:10px;">
+                <div class="readme-title" id="customConfirmTitle" style="font-size: 1.25rem;">确认操作</div>
+            </div>
+            <div class="readme-body" style="display:flex; flex-direction:column; gap: 15px; padding: 0;">
+                <p id="customConfirmMessage" style="margin: 0; color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap;"></p>
+                <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top:5px;">
+                    <button class="btn-secondary" id="customConfirmCancelBtn">取消</button>
+                    <button class="btn-launch" id="customConfirmConfirmBtn" style="background:#ef4444; border-color:#ef4444; color:white;">确认删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="readmeModal" class="readme-modal" aria-hidden="true">
+        <div class="readme-panel">
+            <div class="readme-header">
+                <div class="readme-title">README 说明文档</div>
+                <button id="closeReadmeBtn" class="readme-close" type="button" aria-label="关闭 README">×</button>
+            </div>
+            <div id="readmeBody" class="readme-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs/loader.min.js"></script>
+    <script>
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.46.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            window.htmlEditor = monaco.editor.create(document.getElementById('addPageContentContainer'), {
+                value: '',
+                language: 'html',
+                theme: 'vs-light',
+                minimap: { enabled: false },
+                automaticLayout: true,
+                wordWrap: 'on'
+            });
+        });
+    </script>
+</body>
+</html>

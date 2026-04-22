@@ -1,0 +1,28 @@
+<style>
+  .cards-c3 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: 2rem; }
+  .cards-c3 .text-panel, .cards-c3 .img-panel {
+    background: var(--glass-bg); padding: 2rem;
+    border-radius: 12px; border: 1px solid var(--glass-border);
+  }
+  .cards-c3 h3 { color: var(--accent-color); margin-bottom: 1rem; font-size: 1.5rem; }
+</style>
+
+<h1>视觉呈现：相似艺术风格设计</h1>
+<div class="cards-c3">
+  <div class="text-panel">
+    <h3>🎨 设计理念与图像池</h3>
+    <ul>
+      <li>图像池采用具有**一致风格**的趣味性图像（如 "3 Tiles" 游戏中的植物、甜点等） [cite: 144, 252, 257]</li>
+      <li>作用1：消除图像间的明显差异，提升密码空间的安全性 [cite: 145]</li>
+      <li>作用2：利用趣味性设计降低用户在多轮选择时的重复感与疲劳感 [cite: 146]</li>
+      <li>**相似干扰项机制**：故意引入共享特征的图片（例如不同的草莓图标）增加攻击者的混淆度 [cite: 260, 261]</li>
+    </ul>
+  </div>
+  <div class="img-panel">
+    <h3>视觉干扰示例</h3>
+    <div style="text-align: center; margin-top: 2rem;">
+      <img src="Similar_Art_Placeholder.png" alt="Examples of similar distracters [cite: 228]" style="width: 80%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+      <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--text-secondary);">攻击者仅凭瞬时肩窥，极易在高度相似的干扰项中选择错误 [cite: 262, 263]</p>
+    </div>
+  </div>
+</div>

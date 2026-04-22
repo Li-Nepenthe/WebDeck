@@ -1,0 +1,34 @@
+<style>
+  .split-page-bg2 { display: flex; gap: 3rem; align-items: center; margin-top: 3rem; }
+  .split-page-bg2 .text-side { flex: 1.2; }
+  .split-page-bg2 .visual-side { flex: 0.8; display: flex; flex-direction: column; gap: 1.5rem;}
+  .split-page-bg2 .highlight-box {
+    padding: 1.5rem; background: rgba(0, 94, 170, 0.08);
+    border-left: 6px solid var(--accent-color); border-radius: 8px;
+  }
+  .split-page-bg2 .highlight-box p { margin: 0; font-size: 1.3rem; font-weight: 600; color: var(--accent-color); }
+</style>
+
+<h1>设计强健的图形密码系统：核心挑战</h1>
+<div class="split-page-bg2">
+  <div class="text-side">
+    <h2>肩窥攻击 (Shoulder-Surfing) 仍然是最大威胁</h2>
+    <ul>
+      <li>只要攻击者能够观察到用户的输入过程，传统图形密码的凭证极易被窃取 [cite: 37]</li>
+      <li>单一交互步骤缺乏混淆性，录制攻击成功率高 [cite: 86]</li>
+    </ul>
+    <h2 style="margin-top: 2rem;">本文研究动机</h2>
+    <ul>
+      <li>目标：设计一个兼具**可用性**与**高鲁棒性**的图形密码系统 [cite: 39, 40]</li>
+      <li>核心操作：基于多轮图像选择 (selecting images in rounds) [cite: 40, 41]</li>
+    </ul>
+  </div>
+  <div class="visual-side">
+    <div class="highlight-box">
+      <p>💡 核心挑战：如何在不显著增加用户认知负担的前提下，从根本上降低肩窥攻击的成功率？</p>
+    </div>
+    <div style="text-align: center; color: var(--text-secondary); font-size: 5rem;">
+      🔐 ➡️ 🛡️
+    </div>
+  </div>
+</div>

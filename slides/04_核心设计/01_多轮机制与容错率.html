@@ -1,0 +1,29 @@
+<style>
+  .metrics-c2 { display: flex; gap: 2rem; margin: 2rem 0; }
+  .metrics-c2 .metric-card {
+    flex: 1; text-align: center; padding: 2rem;
+    background: var(--glass-bg); border: 2px solid var(--accent-light);
+    border-radius: 16px; position: relative;
+  }
+  .metrics-c2 .val { font-size: 3.5rem; font-weight: 800; color: var(--accent-color); margin-bottom: 0.5rem; }
+  .metrics-c2 .desc { font-size: 1.2rem; color: var(--text-secondary); }
+</style>
+
+<h1>容错机制与概率分布</h1>
+<p style="font-size: 1.4rem; color: var(--text-secondary); margin-bottom: 1.5rem;">为平衡安全与可用性，系统引入了匹配率阈值机制：</p>
+
+<div class="metrics-c2">
+  <div class="metric-card">
+    <div class="val">≥ 75%</div>
+    <div class="desc">每轮选择 4 张图片中，允许最多 1 张选错即可判定本轮通过 [cite: 130, 133]</div>
+  </div>
+  <div class="metric-card">
+    <div class="val">$$5^3 = 125$$</div>
+    <div class="desc">三轮验证下，攻击者由于容错机制面临多达 125 种隐藏状态，指数级增加穷举难度 [cite: 137]</div>
+  </div>
+</div>
+
+<ul>
+  <li>即使当前轮次输入错误，系统也会进入下一轮，攻击者无法实时判断哪一步出错 [cite: 142, 143]</li>
+  <li>为了防止高频图片被字典攻击，系统通过算法平滑目标图片与干扰图片的显示概率：$$ \frac{n}{100} = \frac{x}{16} $$ [cite: 202, 206]</li>
+</ul>

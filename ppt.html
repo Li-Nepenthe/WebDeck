@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebDeck 演示</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav id="top-nav">
+        <div class="nav-links" id="nav-links"></div>
+        <div id="global-logo">
+            <img src="logo-badge.png" class="logo-badge" alt="Badge" onerror="this.style.display='none'">
+            <img src="logo-text.png" class="logo-text" alt="Text" onerror="this.style.display='none'">
+        </div>
+    </nav>
+
+    <div id="presentation"></div>
+
+    <div id="eraser-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:11000; justify-content:center; align-items:center;">
+        <div style="background:var(--glass-bg); padding:30px 40px; border-radius:16px; border:1px solid var(--glass-border); text-align:center; box-shadow:0 15px 35px var(--shadow-color); backdrop-filter:blur(20px);">
+            <h3 style="margin-bottom:12px; font-weight:800; color:var(--accent-color); font-size:1.4rem;">擦除批注</h3>
+            <p style="margin-bottom:22px; color:var(--text-secondary); font-size:1rem;">请选择只清空当前页，或清空全部页面的笔记。</p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <button id="clearCurrentBtn" type="button" style="padding:10px 18px; font-weight:600; border:none; background:var(--accent-color); color:white; border-radius:8px; cursor:pointer;">当前页擦除</button>
+                <button id="clearAllBtn" type="button" style="padding:10px 18px; font-weight:600; border:none; background:#ef4444; color:white; border-radius:8px; cursor:pointer;">全部擦除</button>
+                <button id="cancelClearBtn" type="button" style="padding:10px 18px; font-weight:600; border:none; background:transparent; color:var(--text-secondary); border-radius:8px; cursor:pointer;">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div id="toolboxContainer" class="toolbox-container">
+            <button id="toolboxToggleBtn" type="button" title="点击展开/收起工具箱">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            </button>
+            <div id="toolboxMenu" class="toolbox-menu">
+                <div class="color-picker-wrapper" title="选择画笔颜色">
+                    <input type="color" id="penColorPicker" value="#38bdf8">
+                </div>
+                <button id="penBtn" type="button" title="开启/关闭批注笔">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
+                <button id="eraserBtn" type="button" title="擦除批注">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path></svg>
+                </button>
+                <button id="pdfBtn" type="button" title="导出高保真 PDF">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                </button>
+            </div>
+        </div>
+        <button id="prevBtn" type="button" title="上一页">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+        </button>
+        <button id="nextBtn" type="button" title="下一页">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+    </div>
+
+    <div id="progress">
+        <div id="progress-bar"></div>
+    </div>
+
+    <script>
+        let current = 0;
+        let presentationData = { chapters: [], slides: [] };
+        let slidesData = [];
+        let isPenMode = false;
+        let penColor = '#38bdf8';
+        let laserDrawing = false;
+        let laserLastX = 0;
+        let laserLastY = 0;
+
+        const presentation = document.getElementById('presentation');
+        const navLinks = document.getElementById('nav-links');
+        const penBtn = document.getElementById('penBtn');
+        const eraserBtn = document.getElementById('eraserBtn');
+        const eraserModal = document.getElementById('eraser-modal');
+        const clearCurrentBtn = document.getElementById('clearCurrentBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const cancelClearBtn = document.getElementById('cancelClearBtn');
+
+        const laserCanvas = document.createElement('canvas');
+        laserCanvas.id = 'laser-canvas';
+        laserCanvas.style.position = 'fixed';
+        laserCanvas.style.inset = '0';
+        laserCanvas.style.width = '100vw';
+        laserCanvas.style.height = '100vh';
+        laserCanvas.style.pointerEvents = 'none';
+        laserCanvas.style.zIndex = '9999';
+        document.body.appendChild(laserCanvas);
+        let globalSheet = null;
+        let fallbackCss = null;
+        let chaptersData = [];
+        const laserCtx = laserCanvas.getContext('2d');
+
+        async function loadData() {
+            try {
+                if (typeof __PRESENTATION_DATA__ !== 'undefined') {
+                    presentationData = __PRESENTATION_DATA__;
+                } else {
+                    const response = await fetch('/api/presentation-data');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    presentationData = await response.json();
+                }
+
+                chaptersData = presentationData.chapters || [];
+                slidesData = presentationData.slides || [];
+                
+                globalSheet = new CSSStyleSheet();
+                fallbackCss = null;
+                if (presentationData.globalCss) {
+                    try {
+                        await globalSheet.replace(presentationData.globalCss);
+                    } catch(e) {
+                        fallbackCss = presentationData.globalCss;
+                    }
+                }
+
+                render();
+                bindGlobalEvents();
+            } catch (error) {
+                document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;color:#dc2626"><h2>无法加载幻灯片</h2><p>请确认当前目录中存在可用的演示数据。</p><small>' + error.message + '</small></div>';
+            }
+        }
+
+        function render() {
+            const chapters = (presentationData.chapters || []).filter(chapter => chapter.showInNav && !chapter.hideNav);
+
+            navLinks.innerHTML = chapters.map(chapter =>
+                `<div class="nav-item ${chapter.isEmpty ? 'empty-chapter' : ''}" data-index="${chapter.startIndex}" data-prefix="${chapter.prefix}" data-empty="${chapter.isEmpty ? '1' : '0'}">${chapter.title}</div>`
+            ).join('');
+
+            // 1. Conditionally apply is-full-bleed and iframe sandbox only for full HTML docs
+            presentation.innerHTML = slidesData.map((slide, index) => {
+                const slideChapter = chaptersData.find(ch => ch.prefix === slide.chapterPrefix);
+                const isNavHidden = slideChapter?.hideNav === true || slide.chapterPrefix === '01_封面' || slide.chapterPrefix === '00_首页' || index === 0;
+                const coverAttr = isNavHidden ? 'data-cover="true"' : '';
+                
+                const rawHtml = slide.rawHtml || slide.html || '';
+                const isFullDocRegex = /<!DOCTYPE\s+html|<html[\s>]|<body[\s>]/i.test(rawHtml);
+                const isFullBleed = slide.isFullBleed === true || isFullDocRegex;
+                // Store the computed full-bleed flag back into slidesData so update() can read it
+                slide._isFullBleed = isFullBleed;
+                const extraClass = isFullBleed ? ' is-full-bleed' : '';
+                
+                const innerContent = isFullBleed
+                    ? `<iframe class="slide-iframe" data-slide-idx="${index}"></iframe>`
+                    : `<div class="shadow-host" data-slide-idx="${index}" style="width:100%; height:100%; display:flex; flex-direction:column; flex:1;"></div>`;
+                
+                return `
+                <section class="slide ${index === 0 ? 'active' : 'next'}${extraClass}" data-index="${index}" data-prefix="${slide.chapterPrefix}" ${coverAttr}>
+                    <canvas class="annotation-canvas"></canvas>
+                    <div class="slide-content" id="slide-content-${index}" style="display:flex; flex-direction:column; width:100%; height:100%; flex:1;">${innerContent}</div>
+                </section>`;
+            }).join('');
+
+            const mathjaxRoots = [document.body];
+
+            // 2. Populate iframes with raw HTML via srcdoc property
+            document.querySelectorAll('.slide-iframe').forEach(iframe => {
+                iframe.onload = () => {
+                    try {
+                        iframe.contentWindow.addEventListener('click', () => window.focus());
+                    } catch(e) {}
+                };
+                const idx = parseInt(iframe.dataset.slideIdx, 10);
+                const slide = slidesData[idx];
+                if (slide) {
+                    const baseTag = `<base href="slides/${encodeURIComponent(slide.chapterPrefix)}/">`;
+                    const overrideCss = `<style>
+                        html, body { width: 100% !important; height: auto !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; background-color: transparent !important; }
+                        body { display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+                        .slide-container { width: 100% !important; height: auto !important; min-height: 100vh !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; padding: 40px 60px !important; transform: none !important; }
+                        canvas, iframe, video, img { display: block !important; }
+                        * { box-sizing: border-box !important; }
+                        ::-webkit-scrollbar { width: 8px; }
+                        ::-webkit-scrollbar-thumb { background: rgba(0, 94, 170, 0.2); border-radius: 4px; }
+                    </style>`;
+                    const injectedHead = baseTag + overrideCss;
+                    let finalHtml = slide.rawHtml || slide.html || '';
+                    if (finalHtml.includes('</head>')) {
+                        finalHtml = finalHtml.replace('</head>', injectedHead + '</head>');
+                    } else {
+                        finalHtml = injectedHead + finalHtml;
+                    }
+                    iframe.srcdoc = finalHtml;
+                }
+            });
+
+            // 3. Populate Shadow DOMs for fragments
+            document.querySelectorAll('.shadow-host').forEach(host => {
+                const idx = parseInt(host.dataset.slideIdx, 10);
+                const slide = slidesData[idx];
+                if (slide) {
+                    const shadow = host.attachShadow({ mode: 'open' });
+                    let htmlContent = slide.html || '';
+                    const basePath = `slides/${encodeURIComponent(slide.chapterPrefix)}/`;
+                    htmlContent = htmlContent.replace(/(src|href)=["'](?!http|https|data:|\/|#|mailto:)([^"']+)["']/gi, `$1="${basePath}$2"`);
+                    htmlContent = htmlContent.replace(/url\(['"]?(?!http|https|data:|\/|data:image)([^'"()]+)['"]?\)/gi, `url('${basePath}$1')`);
+                    
+                    shadow.innerHTML = htmlContent;
+
+                    if (fallbackCss) {
+                        const style = document.createElement('style');
+                        style.textContent = fallbackCss;
+                        shadow.prepend(style);
+                    } else {
+                        shadow.adoptedStyleSheets = [globalSheet];
+                    }
+                    
+                    mathjaxRoots.push(shadow);
+                }
+            });
+
+            // MathJax MutationObserver
+            const mjxSheet = new CSSStyleSheet();
+            function observeMathJax() {
+                const mjxStyle = document.getElementById('MJX-CHTML-styles');
+                if (mjxStyle) {
+                    try { mjxSheet.replace(mjxStyle.textContent); } catch(e) {}
+                    const observer = new MutationObserver(() => {
+                        try { mjxSheet.replace(mjxStyle.textContent); } catch(e) {}
+                    });
+                    observer.observe(mjxStyle, { childList: true, characterData: true, subtree: true });
+                    
+                    mathjaxRoots.forEach(root => {
+                        if (root !== document.body && !root.adoptedStyleSheets.includes(mjxSheet)) {
+                            root.adoptedStyleSheets = [...root.adoptedStyleSheets, mjxSheet];
+                        }
+                    });
+                } else {
+                    const headObserver = new MutationObserver(() => {
+                        if (document.getElementById('MJX-CHTML-styles')) {
+                            headObserver.disconnect();
+                            observeMathJax();
+                        }
+                    });
+                    headObserver.observe(document.head, { childList: true });
+                }
+            }
+            observeMathJax();
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise(mathjaxRoots).catch(err => console.error('MathJax Error:', err));
+            }
+
+            bindSlideEvents();
+            setupAnnotationCanvases();
+            resizeLaserCanvas();
+            update();
+        }
+
+        function bindSlideEvents() {
+            document.getElementById('nextBtn').onclick = nextSlide;
+            document.getElementById('prevBtn').onclick = prevSlide;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.onclick = () => {
+                    if (item.dataset.empty === '1') return;
+                    current = parseInt(item.dataset.index, 10);
+                    update();
+                };
+            });
+        }
+
+        function setupAnnotationCanvases() {
+            document.querySelectorAll('.annotation-canvas').forEach(canvas => {
+                resizeCanvas(canvas);
+
+                if (canvas.dataset.bound === '1') return;
+                canvas.dataset.bound = '1';
+
+                const ctx = canvas.getContext('2d');
+                const state = { drawing: false, lastX: 0, lastY: 0 };
+
+                canvas.addEventListener('mousedown', event => {
+                    if (event.button !== 0 || !isPenMode) return;
+                    state.drawing = true;
+                    state.lastX = event.clientX;
+                    state.lastY = event.clientY;
+                });
+
+                canvas.addEventListener('mousemove', event => {
+                    if (!state.drawing || !isPenMode) return;
+                    ctx.beginPath();
+                    ctx.moveTo(state.lastX, state.lastY);
+                    ctx.lineTo(event.clientX, event.clientY);
+                    ctx.strokeStyle = penColor;
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = penColor;
+                    ctx.stroke();
+                    state.lastX = event.clientX;
+                    state.lastY = event.clientY;
+                });
+
+                canvas.addEventListener('mouseleave', () => {
+                    state.drawing = false;
+                });
+
+                window.addEventListener('mouseup', () => {
+                    state.drawing = false;
+                });
+            });
+
+            syncPenState();
+        }
+
+        function resizeCanvas(canvas) {
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * ratio;
+            canvas.height = window.innerHeight * ratio;
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function resizeLaserCanvas() {
+            const ratio = window.devicePixelRatio || 1;
+            laserCanvas.width = window.innerWidth * ratio;
+            laserCanvas.height = window.innerHeight * ratio;
+            laserCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function syncPenState() {
+            document.querySelectorAll('.annotation-canvas').forEach(canvas => {
+                canvas.style.pointerEvents = isPenMode ? 'auto' : 'none';
+            });
+            penBtn.classList.toggle('active', isPenMode);
+        }
+
+        function update() {
+            const slides = document.querySelectorAll('.slide');
+            const navItems = document.querySelectorAll('.nav-item');
+            const bar = document.getElementById('progress-bar');
+            const slideData = slidesData[current];
+            const prefix = slideData?.chapterPrefix;
+            
+            // 查找当前幻灯片所属章节的 hideNav 配置
+            const currentChapter = chaptersData.find(ch => ch.prefix === prefix);
+            const chapterHideNav = currentChapter?.hideNav === true;
+            
+            // 同时检查当前页自身、所属大章节、以及特定的文件夹前缀
+            const isNavHidden = chapterHideNav || prefix === '01_封面' || prefix === '00_首页' || current === 0;
+
+            slides.forEach((slide, index) => {
+                // Preserve is-full-bleed from either the cached flag or the existing DOM class
+                const isFullBleed = slidesData[index]?._isFullBleed || slidesData[index]?.isFullBleed || slide.classList.contains('is-full-bleed');
+                const fullBleedClass = isFullBleed ? ' is-full-bleed' : '';
+                slide.className = 'slide' + fullBleedClass + ' ' + (index === current ? 'active' : (index < current ? 'prev' : 'next'));
+                
+                // Reset horizontal scroll on the active slide to prevent left-truncation
+                if (index === current) {
+                    const content = slide.querySelector('.slide-content');
+                    if (content) {
+                        content.scrollLeft = 0;
+                    }
+                }
+            });
+
+            if (bar) {
+                const denominator = Math.max(slidesData.length - 1, 1);
+                bar.style.width = ((current / denominator) * 100) + '%';
+            }
+
+            navItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.prefix === prefix);
+            });
+
+            const nav = document.getElementById('top-nav');
+            const presentationDiv = document.getElementById('presentation');
+
+            // 统一调度，同时隐藏顶栏并让内容层吃掉空缺位置
+            if (isNavHidden) {
+                if (nav) {
+                    nav.style.opacity = '0';
+                    nav.style.transform = 'translateY(-20px)';
+                    nav.style.pointerEvents = 'none';
+                }
+                if (presentationDiv) presentationDiv.classList.add('no-nav');
+            } else {
+                if (nav) {
+                    nav.style.opacity = '1';
+                    nav.style.transform = 'translateY(0)';
+                    nav.style.pointerEvents = 'auto';
+                }
+                if (presentationDiv) presentationDiv.classList.remove('no-nav');
+            }
+
+            if (window.MathJax?.typesetPromise) {
+                window.MathJax.typesetPromise();
+            }
+        }
+
+        function nextSlide() {
+            if (current < slidesData.length - 1) {
+                current += 1;
+                update();
+            }
+        }
+
+        function prevSlide() {
+            if (current > 0) {
+                current -= 1;
+                update();
+            }
+        }
+
+        function bindGlobalEvents() {
+            const toolboxToggleBtn = document.getElementById('toolboxToggleBtn');
+            const toolboxMenu = document.getElementById('toolboxMenu');
+            const penColorPicker = document.getElementById('penColorPicker');
+
+            toolboxToggleBtn.addEventListener('click', () => {
+                toolboxMenu.classList.toggle('open');
+                toolboxToggleBtn.classList.toggle('active');
+            });
+
+            penColorPicker.addEventListener('input', e => {
+                penColor = e.target.value;
+            });
+
+            document.getElementById('pdfBtn').addEventListener('click', () => {
+                window.print();
+            });
+
+            penBtn.addEventListener('click', () => {
+                isPenMode = !isPenMode;
+                syncPenState();
+            });
+
+            eraserBtn.addEventListener('click', () => {
+                eraserModal.style.display = 'flex';
+            });
+
+            cancelClearBtn.addEventListener('click', () => {
+                eraserModal.style.display = 'none';
+            });
+
+            clearCurrentBtn.addEventListener('click', () => {
+                const activeCanvas = document.querySelector(`.slide[data-index="${current}"] .annotation-canvas`);
+                if (activeCanvas) {
+                    const ctx = activeCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
+                }
+                eraserModal.style.display = 'none';
+            });
+
+            clearAllBtn.addEventListener('click', () => {
+                document.querySelectorAll('.annotation-canvas').forEach(canvas => {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+                eraserModal.style.display = 'none';
+            });
+
+            document.addEventListener('keydown', event => {
+                if ((event.key === 'ArrowRight' || event.key === ' ') && current < slidesData.length - 1) {
+                    current += 1;
+                    update();
+                }
+                if (event.key === 'ArrowLeft' && current > 0) {
+                    current -= 1;
+                    update();
+                }
+            });
+
+            document.addEventListener('contextmenu', event => {
+                event.preventDefault();
+            });
+
+            document.addEventListener('mousedown', event => {
+                if (event.button === 2 || (event.button === 0 && (event.ctrlKey || event.metaKey))) {
+                    laserDrawing = true;
+                    laserLastX = event.clientX;
+                    laserLastY = event.clientY;
+                }
+            });
+
+            document.addEventListener('mousemove', event => {
+                if (!laserDrawing) return;
+                laserCtx.beginPath();
+                laserCtx.moveTo(laserLastX, laserLastY);
+                laserCtx.lineTo(event.clientX, event.clientY);
+                laserCtx.strokeStyle = '#ff0000';
+                laserCtx.lineWidth = 4;
+                laserCtx.lineCap = 'round';
+                laserCtx.lineJoin = 'round';
+                laserCtx.shadowBlur = 10;
+                laserCtx.shadowColor = 'rgba(255, 0, 0, 0.8)';
+                laserCtx.stroke();
+                laserLastX = event.clientX;
+                laserLastY = event.clientY;
+            });
+
+            document.addEventListener('mouseup', event => {
+                laserDrawing = false;
+            });
+
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.annotation-canvas').forEach(resizeCanvas);
+                resizeLaserCanvas();
+            });
+
+            fadeLaser();
+        }
+
+        function fadeLaser() {
+            if (!laserDrawing) {
+                laserCtx.shadowBlur = 0;
+                laserCtx.globalCompositeOperation = 'destination-out';
+                laserCtx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Increased from 0.15 for much faster laser fade
+                laserCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                laserCtx.globalCompositeOperation = 'source-over';
+            }
+            requestAnimationFrame(fadeLaser);
+        }
+
+
+        loadData();
+
+        // --- 心跳上报逻辑：每2秒告知后端页面仍处于活跃状态 ---
+        setInterval(() => {
+            fetch('/api/heartbeat', { method: 'POST' }).catch(() => {});
+        }, 2000);
+    </script>
+</body>
+</html>

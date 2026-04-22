@@ -1,0 +1,587 @@
+:root {
+  --bg-color-start: #f0f7ff;
+  --bg-color-end: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-color: #005eaa; /* Hainan University Blue */
+  --accent-light: #38bdf8;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 94, 170, 0.15);
+  --shadow-color: rgba(0, 94, 170, 0.08);
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+  color: var(--text-primary);
+}
+
+/* Background animation */
+body::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 94, 170, 0.05) 0%, transparent 60%);
+    animation: pulse 15s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(5%, 5%) scale(1.1); }
+}
+
+#app, #presentation {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Top Navigation */
+#top-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    padding: 0 50px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 15px var(--shadow-color);
+    z-index: 1000;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: space-evenly;
+    padding-right: 60px; /* 预留给右侧Logo的空间缓冲 */
+}
+
+.nav-item {
+    font-size: 1.4rem; /* 字体加大 */
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    padding: 10px 0;
+    transition: color 0.3s ease, transform 0.3s ease;
+    user-select: none;
+}
+
+.nav-item:hover {
+    color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.nav-item.active {
+    color: var(--accent-color);
+    font-weight: 800;
+}
+
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* 针对没有内容的章节进行外观致灰处理 */
+.nav-item.empty-chapter {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.nav-item.empty-chapter:hover {
+    transform: none;
+    color: var(--text-secondary);
+}
+
+/* Company/University Logo styling */
+#global-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--accent-color);
+  user-select: none;
+  letter-spacing: 2px;
+  opacity: 0.95;
+}
+
+#global-logo img.logo-badge {
+  height: 80px;
+  object-fit: contain;
+}
+
+#global-logo img.logo-text {
+  height: 110px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+/* 1. 废弃 padding，改用绝对坐标和精确的 calc 容积计算 */
+.slide {
+  position: absolute;
+  top: 110px; /* 为导航栏分配绝对物理边界 */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 110px); /* 精确计算剩余容积 */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden; /* 防止切换方向后内容溢出导致截断 */
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+              top 0.5s ease, height 0.5s ease;
+}
+
+.slide.active {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.slide.prev {
+    transform: translateX(-100vw) scale(0.9);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.slide.next {
+    transform: translateX(100vw) scale(0.9);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 2. 强制建立独立定位上下文，激活内部有效滚动 */
+.slide-content {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    position: relative; /* 核心：拦截内部 iframe/HTML 的绝对定位外溢 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 30px 60px;
+    box-sizing: border-box;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 94, 170, 0.2) transparent;
+}
+
+.slide-content::-webkit-scrollbar {
+    width: 8px;
+}
+.slide-content::-webkit-scrollbar-corner {
+    background: transparent;
+}
+.slide-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 94, 170, 0.2);
+    border-radius: 4px;
+}
+
+/* 3. 首页/封面页全屏抢占模式 */
+/* 只有显式标记为封面（data-cover）的页面才允许 padding 归零 */
+.slide[data-cover="true"] .slide-content,
+.slide[data-cover] .slide-content {
+    padding: 0;
+}
+
+/* 如果仅仅是隐藏了导航栏，我们依然保留内容区域的基本间距，防止元素拉伸变形 */
+.no-nav .slide,
+.slide[data-cover="true"],
+.slide[data-cover] {
+    top: 0;
+    height: 100%; 
+}
+
+.no-nav .slide-content {
+    padding: 30px 60px; /* 保持设计预期的安全边距 */
+}
+
+/*
+ * full-bleed 模式：完整 HTML 文档通过 <iframe> 渲染。
+ * iframe 提供完美的 CSS 和布局隔离——
+ *   - 插入的 HTML 的样式不会泄漏到导航栏和其他幻灯片
+ *   - 插入的 HTML 的定位元素（position:absolute/fixed）被限制在 iframe 内
+ * .slide-content 变为零内边距，iframe 铺满全部可用空间。
+ */
+/* iframe 铺满 slide-content 的全部空间 */
+.slide.is-full-bleed .slide-content {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden; /* 兜底亚像素误差 */
+}
+
+.slide-iframe {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    border: none;
+    outline: none;
+    display: block;
+    background: #fff;
+}
+
+/* 消除 Canvas 的内联基线间隙（baseline gap） */
+.annotation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    display: block; /* 消除 baseline 撑破高度 */
+}
+
+/* Override common fixed-dimension container patterns from pasted HTML (fragment mode) */
+.slide-content .slide-container {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    box-shadow: none !important;
+    border-top: none !important;
+    border-radius: 0 !important;
+}
+
+/* AI generated HTML typography styling */
+.slide h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, var(--accent-color), #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.slide h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.slide p, .slide li {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.slide ul {
+    list-style-type: none;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.slide li {
+    position: relative;
+}
+
+.slide ul > li::before {
+    content: '▪';
+    position: absolute;
+    left: -1.5rem;
+    color: var(--accent-color);
+    font-size: 1.2em;
+    line-height: 1.2;
+}
+
+/* 封面页专有排版 */
+.cover-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 50px;
+}
+
+.cover-page .title-container {
+    margin-bottom: 80px;
+}
+
+.cover-page h1 {
+    font-size: 4.8rem;
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 20px;
+    background: linear-gradient(to right, var(--accent-color), #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0, 94, 170, 0.15); /* Soft drop shadow for title */
+}
+
+.cover-page h2.subtitle {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: 15px;
+}
+
+.cover-page .author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 35px 70px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px var(--shadow-color);
+    backdrop-filter: blur(10px);
+}
+
+.cover-page .presenter {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin: 0;
+}
+
+.cover-page .university, .cover-page .date {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Iframe embedding specifically */
+.iframe-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #fff;
+}
+
+/* UI Controls */
+#controls {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    display: flex;
+    gap: 15px;
+    z-index: 100;
+}
+
+#controls button {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
+}
+
+#controls button:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px rgba(0, 94, 170, 0.04);
+}
+
+#controls button:active {
+    transform: translateY(0);
+}
+
+/* Toolbox Styles */
+.toolbox-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toolbox-menu {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 12px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    padding: 10px;
+    box-shadow: 0 10px 25px -5px var(--shadow-color);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    transform-origin: bottom right;
+}
+
+.toolbox-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+#controls .toolbox-menu button {
+    width: 44px;
+    height: 44px;
+}
+
+.color-picker-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid var(--glass-border);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px -2px var(--shadow-color);
+}
+.color-picker-wrapper:hover {
+    transform: scale(1.1);
+}
+#penColorPicker {
+    width: 200%;
+    height: 200%;
+    margin: -50%;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+#controls #toolboxToggleBtn.active {
+    background: var(--accent-light);
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px var(--accent-light);
+}
+
+/* Progress bar */
+#progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 94, 170, 0.1);
+    z-index: 100;
+}
+
+#progress-bar {
+    height: 100%;
+    background: var(--accent-color);
+    width: 0%;
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 10px var(--accent-light);
+}
+
+/* Annotation feature */
+.annotation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9000;
+  pointer-events: none;
+}
+
+#controls #penBtn.active {
+    background: var(--accent-light);
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px var(--accent-light);
+}
+
+/* Print/PDF Export Styles */
+@media print {
+    @page {
+        margin: 0; /* Removing margins disables browser default headers and footers */
+        size: landscape; /* Suggest landscape mode automatically */
+    }
+    body, html { 
+        width: 100%; 
+        height: auto; 
+        overflow: visible !important; 
+        background: white !important; 
+    }
+    body::before { 
+        display: none !important; 
+    }
+    #top-nav, #controls, #progress, .annotation-canvas, #eraser-modal, #laser-canvas { 
+        display: none !important; 
+    }
+    #app, #presentation { 
+        display: block !important; 
+        position: static !important; 
+        overflow: visible !important;
+    }
+    .slide {
+        position: relative !important;
+        transform: none !important;
+        opacity: 1 !important;
+        page-break-after: always;
+        break-after: page;
+        width: 100vw !important;
+        height: 100vh !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 40px !important;
+    }
+    .slide.next, .slide.prev {
+        display: flex !important; /* Forces all hidden slides to flow naturally during print */
+        pointer-events: auto !important;
+    }
+    .slide:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+}

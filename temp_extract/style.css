@@ -1,0 +1,389 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+:root {
+  --bg-color-start: #f0f7ff;
+  --bg-color-end: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-color: #005eaa; /* Hainan University Blue */
+  --accent-light: #38bdf8;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 94, 170, 0.15);
+  --shadow-color: rgba(0, 94, 170, 0.08);
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+  color: var(--text-primary);
+}
+
+/* Background animation */
+body::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 94, 170, 0.05) 0%, transparent 60%);
+    animation: pulse 15s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(5%, 5%) scale(1.1); }
+}
+
+#app, #presentation {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Top Navigation */
+#top-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    padding: 0 50px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 15px var(--shadow-color);
+    z-index: 1000;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: space-evenly;
+    padding-right: 60px; /* 预留给右侧Logo的空间缓冲 */
+}
+
+.nav-item {
+    font-size: 1.4rem; /* 字体加大 */
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    padding: 10px 0;
+    transition: color 0.3s ease, transform 0.3s ease;
+    user-select: none;
+}
+
+.nav-item:hover {
+    color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.nav-item.active {
+    color: var(--accent-color);
+    font-weight: 800;
+}
+
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* 针对没有内容的章节进行外观致灰处理 */
+.nav-item.empty-chapter {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.nav-item.empty-chapter:hover {
+    transform: none;
+    color: var(--text-secondary);
+}
+
+/* Company/University Logo styling */
+#global-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--accent-color);
+  user-select: none;
+  letter-spacing: 2px;
+  opacity: 0.95;
+}
+
+#global-logo img.logo-badge {
+  height: 80px;
+  object-fit: contain;
+}
+
+#global-logo img.logo-text {
+  height: 110px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  padding: 40px 60px;
+}
+
+.slide.active {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.slide.prev {
+    transform: translateX(-100vw) scale(0.9);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.slide.next {
+    transform: translateX(100vw) scale(0.9);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Default slide content stylistic properties */
+.slide-content {
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* AI generated HTML typography styling */
+.slide h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, var(--accent-color), #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.slide h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.slide p, .slide li {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.slide ul {
+    list-style-type: none;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.slide li {
+    position: relative;
+}
+
+.slide ul > li::before {
+    content: '▪';
+    position: absolute;
+    left: -1.5rem;
+    color: var(--accent-color);
+    font-size: 1.2em;
+    line-height: 1.2;
+}
+
+/* 封面页专有排版 */
+.cover-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 50px;
+}
+
+.cover-page .title-container {
+    margin-bottom: 80px;
+}
+
+.cover-page h1 {
+    font-size: 4.8rem;
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 20px;
+    background: linear-gradient(to right, var(--accent-color), #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0, 94, 170, 0.15); /* Soft drop shadow for title */
+}
+
+.cover-page h2.subtitle {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: 15px;
+}
+
+.cover-page .author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 35px 70px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px var(--shadow-color);
+    backdrop-filter: blur(10px);
+}
+
+.cover-page .presenter {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin: 0;
+}
+
+.cover-page .university, .cover-page .date {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Iframe embedding specifically */
+.iframe-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #fff;
+}
+
+/* UI Controls */
+#controls {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    display: flex;
+    gap: 15px;
+    z-index: 100;
+}
+
+#controls button {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
+}
+
+#controls button:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px rgba(0, 94, 170, 0.04);
+}
+
+#controls button:active {
+    transform: translateY(0);
+}
+
+/* Progress bar */
+#progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 94, 170, 0.1);
+    z-index: 100;
+}
+
+#progress-bar {
+    height: 100%;
+    background: var(--accent-color);
+    width: 0%;
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 10px var(--accent-light);
+}
+
+/* Annotation feature */
+.annotation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9000;
+  pointer-events: none;
+}
+
+#controls #penBtn.active {
+    background: var(--accent-light);
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px var(--accent-light);
+}
+

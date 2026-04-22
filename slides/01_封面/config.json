@@ -1,0 +1,14 @@
+{
+  "showInNav": true,
+  "hideNav": false,
+  "hiddenFiles": [
+    "01_封面.html",
+    "01_攻击.html",
+    "01_title.html",
+    "02_目录.html",
+    "02_title.html",
+    "03_封面.html",
+    "03_目录.html",
+    "04_封面.html"
+  ]
+}
