@@ -11,9 +11,9 @@ const JAVASCRIPT_URL_HINT_REGEX = /\b(?:href|src|xlink:href)\s*=\s*["']?\s*javas
 const REBASED_URL_ATTRIBUTES = ['src', 'href', 'poster', 'data', 'action', 'formaction', 'xlink:href'];
 const REBASED_SRCSET_ATTRIBUTES = ['srcset', 'imagesrcset'];
 const FULL_DOC_OVERRIDE_CSS = `
-    html, body { width: 100% !important; height: auto !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; background-color: transparent !important; }
-    body { display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
-    .slide-container { width: 100% !important; height: auto !important; min-height: 100vh !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; padding: 40px 60px !important; transform: none !important; }
+    html, body { width: 100% !important; height: 100% !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; }
+    body { display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
+    .slide-container { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; transform: none !important; }
     canvas, iframe, video, img { display: block !important; }
     * { box-sizing: border-box !important; }
     ::-webkit-scrollbar { width: 8px; }
@@ -290,19 +290,14 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
 
-  <div id="controls" style="transition: opacity 0.5s ease;">
+  <div id="controls" class="hidden">
     <button id="eraserBtn" title="Eraser Tool">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path></svg>
     </button>
     <button id="penBtn" title="Toggle Annotation Pen">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
     </button>
-    <button id="prevBtn" title="Previous Slide">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <button id="nextBtn" title="Next Slide">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
+
   </div>
   <div id="progress" style="transition: opacity 0.5s ease;">
     <div id="progress-bar"></div>
@@ -395,15 +390,31 @@ function jumpToSlide(index) {
     }
 }
 
-// Event Listeners for slide controls
-document.getElementById('nextBtn')?.addEventListener('click', nextSlide);
-document.getElementById('prevBtn')?.addEventListener('click', prevSlide);
+// Event Listeners for slide controls (keyboard-only, arrow buttons removed)
+
+// Elegant startup notification for keyboard shortcut to toggle toolbox visibility
+const controlsElement = document.getElementById('controls');
+if (controlsElement) {
+    const tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.85); color:white; padding:10px 24px; border-radius:30px; font-size:0.95rem; font-weight:600; backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); z-index:10000; transition:opacity 0.8s ease; pointer-events:none; box-shadow: 0 10px 25px rgba(0,0,0,0.25);';
+    tip.innerHTML = '💡 提示：按 <b style="color:#38bdf8;padding:0 3px;">T</b> 或 <b style="color:#38bdf8;padding:0 3px;">H</b> 键可切换工具栏的显示与隐藏';
+    document.body.appendChild(tip);
+    setTimeout(() => {
+        tip.style.opacity = '0';
+        setTimeout(() => tip.remove(), 800);
+    }, 4000);
+}
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === 'Space' || e.code === 'Space') {
         nextSlide();
     } else if (e.key === 'ArrowLeft') {
         prevSlide();
+    } else if (e.key.toLowerCase() === 't' || e.key.toLowerCase() === 'h') {
+        const controls = document.getElementById('controls');
+        if (controls) {
+            controls.classList.toggle('hidden');
+        }
     }
 });
 

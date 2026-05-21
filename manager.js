@@ -7,6 +7,7 @@ const targetFolderDisplay = document.getElementById('targetFolderDisplay');
 const toastEl = document.getElementById('toast');
 const saveStandaloneBtn = document.getElementById('saveStandaloneBtn');
 const clearDistBtn = document.getElementById('clearDistBtn');
+const resetProjectBtn = document.getElementById('resetProjectBtn');
 const openDistBtn = document.getElementById('openDistBtn');
 const openReadmeBtn = document.getElementById('openReadmeBtn');
 const readmeModal = document.getElementById('readmeModal');
@@ -49,9 +50,9 @@ const JAVASCRIPT_URL_HINT_REGEX = /\b(?:href|src|xlink:href)\s*=\s*["']?\s*javas
 const REBASED_URL_ATTRIBUTES = ['src', 'href', 'poster', 'data', 'action', 'formaction', 'xlink:href'];
 const REBASED_SRCSET_ATTRIBUTES = ['srcset', 'imagesrcset'];
 const FULL_DOC_OVERRIDE_CSS = `
-    html, body { width: 100% !important; height: auto !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; background-color: transparent !important; }
-    body { display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
-    .slide-container { width: 100% !important; height: auto !important; min-height: 100vh !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; padding: 40px 60px !important; transform: none !important; }
+    html, body { width: 100% !important; height: 100% !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; overflow-y: auto !important; }
+    body { display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
+    .slide-container { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; transform: none !important; }
     canvas, iframe, video, img { display: block !important; }
     * { box-sizing: border-box !important; }
     ::-webkit-scrollbar { width: 8px; }
@@ -835,6 +836,28 @@ clearDistBtn.addEventListener('click', async () => {
     const res = await fetch('/api/clear-dist', { method: 'POST' });
     if ((await res.json()).success) {
         showToast('dist 已清理');
+    }
+});
+
+resetProjectBtn.addEventListener('click', async () => {
+    if (!await showCustomConfirm('重置项目', '确定要清空所有幻灯片内容吗？\n\n这将删除 slides 文件夹下的所有章节、页面和资源文件，仅保留一个空的「封面」章节。\n\n⚠️ 此操作不可逆，请确认。')) return;
+
+    try {
+        const res = await fetch('/api/reset-project', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('项目已重置，仅保留封面章节');
+            currentActiveFolder = null;
+            targetFolderDisplay.textContent = '请先在左侧选择一个章节';
+            dropzone.classList.add('disabled');
+            if (previewIframe) previewIframe.style.display = 'none';
+            dropzone.style.display = 'flex';
+            loadFolders();
+        } else {
+            showToast(`重置失败：${data.error || '未知错误'}`, true);
+        }
+    } catch {
+        showToast('重置失败，请检查服务', true);
     }
 });
 

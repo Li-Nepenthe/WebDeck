@@ -409,6 +409,26 @@ export default defineConfig({
                                     if (src) fs.copyFileSync(src, path.join(projectPath, filename));
                                 });
 
+                                // Copy all non-HTML static assets from slides/ subdirectories
+                                // so that relative image/font/video references in slide HTML work in the export.
+                                if (fs.existsSync(slidesDir)) {
+                                    fs.readdirSync(slidesDir, { withFileTypes: true })
+                                        .filter(d => d.isDirectory())
+                                        .forEach(folderDirent => {
+                                            const srcFolder = path.join(slidesDir, folderDirent.name);
+                                            const dstFolder = path.join(projectPath, 'slides', folderDirent.name);
+                                            fs.readdirSync(srcFolder, { withFileTypes: true })
+                                                .filter(f => f.isFile() && !f.name.endsWith('.html') && f.name !== 'config.json')
+                                                .forEach(fileDirent => {
+                                                    ensureDir(dstFolder);
+                                                    fs.copyFileSync(
+                                                        path.join(srcFolder, fileDirent.name),
+                                                        path.join(dstFolder, fileDirent.name)
+                                                    );
+                                                });
+                                        });
+                                }
+
                                 const template = fs.readFileSync(path.resolve(rootDir, 'ppt-standalone-template.html'), 'utf-8');
                                 const presentationData = buildPresentationData(slidesDir);
                                 const html = template.replace('__PRESENTATION_DATA__', serializeForInlineScript(presentationData));
@@ -421,6 +441,32 @@ export default defineConfig({
                                 res.statusCode = 500;
                                 res.end(JSON.stringify({ success: false, error: error.message }));
                             }
+                        }
+                        return;
+                    }
+
+                    if (req.url === '/api/reset-project' && req.method === 'POST') {
+                        try {
+                            if (fs.existsSync(slidesDir)) {
+                                fs.readdirSync(slidesDir, { withFileTypes: true })
+                                    .filter(d => d.isDirectory())
+                                    .forEach(d => fs.rmSync(path.join(slidesDir, d.name), { recursive: true, force: true }));
+                            }
+                            ensureDir(slidesDir);
+
+                            const coverDir = path.join(slidesDir, '01_封面');
+                            ensureDir(coverDir);
+                            fs.writeFileSync(
+                                path.join(coverDir, 'config.json'),
+                                JSON.stringify({ showInNav: false, hideNav: true, hiddenFiles: [] }, null, 2),
+                                'utf-8'
+                            );
+
+                            res.setHeader('Content-Type', 'application/json');
+                            res.end(JSON.stringify({ success: true }));
+                        } catch (error) {
+                            res.statusCode = 500;
+                            res.end(JSON.stringify({ success: false, error: error.message }));
                         }
                         return;
                     }

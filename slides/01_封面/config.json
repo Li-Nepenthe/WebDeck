@@ -1,6 +1,6 @@
 {
-  "showInNav": true,
-  "hideNav": false,
+  "showInNav": false,
+  "hideNav": true,
   "hiddenFiles": [
     "01_攻击.html",
     "01_title.html",
