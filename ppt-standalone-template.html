@@ -41,10 +41,6 @@
 
     </div>
 
-    <div id="progress">
-        <div id="progress-bar"></div>
-    </div>
-
     <script>
         let current = 0;
         let presentationData = __PRESENTATION_DATA__;
@@ -443,8 +439,6 @@
         function update() {
             const slides = document.querySelectorAll('.slide');
             const navItems = document.querySelectorAll('.nav-item');
-            const bar = document.getElementById('progress-bar');
-            
             const slideData = slidesData[current];
             const prefix = slideData?.chapterPrefix;
             
@@ -468,11 +462,6 @@
                     }
                 }
             });
-
-            if (bar) {
-                const denominator = Math.max(slidesData.length - 1, 1);
-                bar.style.width = ((current / denominator) * 100) + '%';
-            }
 
             navItems.forEach(item => {
                 item.classList.toggle('active', item.dataset.prefix === prefix);

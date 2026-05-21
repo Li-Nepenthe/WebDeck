@@ -686,6 +686,68 @@ export default defineConfig({
                         return;
                     }
 
+                    if (req.url === '/api/upload-image' && req.method === 'POST') {
+                        const body = await parseJsonBody(req);
+                        if (body.folder && body.filename && body.data) {
+                            try {
+                                const folderPath = path.resolve(path.join(slidesDir, body.folder));
+                                // Safety: ensure resolved path is within slidesDir
+                                if (!folderPath.startsWith(path.resolve(slidesDir))) {
+                                    res.statusCode = 403;
+                                    res.end(JSON.stringify({ success: false, error: 'Forbidden' }));
+                                    return;
+                                }
+                                ensureDir(folderPath);
+
+                                // Sanitize filename: keep only safe characters
+                                const safeName = body.filename.replace(/[\\/:*?"<>|]/g, '_');
+                                const filePath = path.join(folderPath, safeName);
+
+                                // Decode base64 data and write binary file
+                                const buffer = Buffer.from(body.data, 'base64');
+                                fs.writeFileSync(filePath, buffer);
+
+                                res.setHeader('Content-Type', 'application/json');
+                                res.end(JSON.stringify({ success: true, filename: safeName }));
+                            } catch (error) {
+                                res.statusCode = 500;
+                                res.end(JSON.stringify({ success: false, error: error.message }));
+                            }
+                        } else {
+                            res.statusCode = 400;
+                            res.end(JSON.stringify({ success: false, error: 'Missing folder, filename or data' }));
+                        }
+                        return;
+                    }
+
+                    if (req.url === '/api/list-images' && req.method === 'GET') {
+                        const urlObj = new URL(req.url, 'http://localhost');
+                        const folder = urlObj.searchParams.get('folder');
+                        if (folder) {
+                            try {
+                                const folderPath = path.resolve(path.join(slidesDir, folder));
+                                if (!folderPath.startsWith(path.resolve(slidesDir))) {
+                                    res.statusCode = 403;
+                                    res.end(JSON.stringify({ success: false, error: 'Forbidden' }));
+                                    return;
+                                }
+                                const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.ico'];
+                                const images = fs.existsSync(folderPath)
+                                    ? fs.readdirSync(folderPath).filter(f => imageExts.includes(path.extname(f).toLowerCase()))
+                                    : [];
+                                res.setHeader('Content-Type', 'application/json');
+                                res.end(JSON.stringify({ success: true, images }));
+                            } catch (error) {
+                                res.statusCode = 500;
+                                res.end(JSON.stringify({ success: false, error: error.message }));
+                            }
+                        } else {
+                            res.statusCode = 400;
+                            res.end(JSON.stringify({ success: false, error: 'Missing folder' }));
+                        }
+                        return;
+                    }
+
                     next();
                 });
             }

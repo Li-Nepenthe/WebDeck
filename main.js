@@ -299,19 +299,14 @@ document.querySelector('#app').innerHTML = `
     </button>
 
   </div>
-  <div id="progress" style="transition: opacity 0.5s ease;">
-    <div id="progress-bar"></div>
-  </div>
 `;
 
 // Logic
 let currentSlideIndex = 0;
 const totalSlides = slidesData.length;
 const slideElements = document.querySelectorAll('.slide');
-const progressBar = document.getElementById('progress-bar');
 const navItems = document.querySelectorAll('.nav-item');
 const topNav = document.getElementById('top-nav');
-const progressBlock = document.getElementById('progress');
 
 function updateViteSlides() {
     if (totalSlides === 0) return;
@@ -341,18 +336,13 @@ function updateViteSlides() {
         topNav.style.opacity = '0';
         topNav.style.transform = 'translateY(-20px)';
         topNav.style.pointerEvents = 'none';
-        progressBlock.style.opacity = '0';
         document.getElementById('presentation').classList.add('no-nav');
     } else {
         topNav.style.opacity = '1';
         topNav.style.transform = 'translateY(0)';
         topNav.style.pointerEvents = 'auto';
-        progressBlock.style.opacity = '1';
         document.getElementById('presentation').classList.remove('no-nav');
     }
-
-    const progressPercentage = totalSlides > 1 ? (currentSlideIndex / (totalSlides - 1)) * 100 : 100;
-    progressBar.style.width = `${progressPercentage || 0}%`;
 
     navItems.forEach(item => {
         if (item.dataset.prefix === currentPrefix) {

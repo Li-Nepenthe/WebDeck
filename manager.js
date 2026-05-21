@@ -517,6 +517,7 @@ function buildFolderActions(folder) {
         <div class="item-actions">
             <button class="add-page-btn rename-folder-btn" type="button" title="重命名章节" style="padding:4px 8px;">✏️</button>
             <button class="add-page-btn" type="button" title="新建页面">➕</button>
+            <button class="import-image-btn" type="button" title="导入图片到当前章节（可拖拽图片到此按钮）">📷 导入图片</button>
             <button class="visibility-toggle ${folder.hideNav ? 'is-off' : 'is-on'} slide-nav-mode-btn" type="button" title="隐藏后：该章不在导航栏中显示，且播放时隐藏顶部导航栏">
                 ${folder.hideNav ? '已隐藏' : '导航可见'}
             </button>
@@ -595,6 +596,53 @@ async function loadFolders() {
                 event.stopPropagation();
                 deleteFolder(folder.name, folder.title || folder.name);
             };
+
+            // --- 导入图片按钮 ---
+            const importImageBtn = header.querySelector('.import-image-btn');
+            if (importImageBtn) {
+                // 点击打开文件选择器
+                importImageBtn.onclick = event => {
+                    event.stopPropagation();
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.multiple = true;
+                    input.onchange = () => {
+                        if (input.files.length > 0) {
+                            handleImageFiles(input.files, folder.name);
+                        }
+                    };
+                    input.click();
+                };
+
+                // 拖拽图片到按钮
+                importImageBtn.addEventListener('dragover', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    importImageBtn.classList.add('drag-hover');
+                });
+
+                importImageBtn.addEventListener('dragleave', event => {
+                    event.stopPropagation();
+                    importImageBtn.classList.remove('drag-hover');
+                });
+
+                importImageBtn.addEventListener('drop', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    importImageBtn.classList.remove('drag-hover');
+                    const files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        // Filter image files only
+                        const imageFiles = [...files].filter(f => f.type.startsWith('image/'));
+                        if (imageFiles.length > 0) {
+                            handleImageFiles(imageFiles, folder.name);
+                        } else {
+                            showToast('请拖入图片文件（PNG/JPG/GIF/SVG/WebP）', true);
+                        }
+                    }
+                });
+            }
 
             card.appendChild(header);
 
@@ -1020,6 +1068,63 @@ document.addEventListener('keydown', event => {
         closeAddPageModal();
     }
 });
+
+// --- 图片导入逻辑 ---
+async function handleImageFiles(files, folderName) {
+    for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+            showToast(`跳过非图片文件：${file.name}`, true);
+            continue;
+        }
+
+        // 提取原文件名（不带扩展名）和扩展名
+        const lastDot = file.name.lastIndexOf('.');
+        const originalBaseName = lastDot > 0 ? file.name.substring(0, lastDot) : file.name;
+        const extension = lastDot > 0 ? file.name.substring(lastDot) : '';
+
+        // 弹出重命名对话框
+        const newBaseName = await showCustomPrompt(
+            `为图片命名 (将保存到 ${folderName})`,
+            originalBaseName
+        );
+
+        if (!newBaseName) continue; // 用户取消
+
+        const finalFilename = newBaseName + extension;
+
+        // 读取文件为 base64
+        const base64 = await fileToBase64(file);
+
+        try {
+            const result = await postJson('/api/upload-image', {
+                folder: folderName,
+                filename: finalFilename,
+                data: base64
+            });
+
+            if (result.success) {
+                showToast(`✅ 图片已保存：${result.filename} → ${folderName}/`);
+            } else {
+                showToast(`图片保存失败：${result.error || '未知错误'}`, true);
+            }
+        } catch {
+            showToast('图片上传失败，请检查服务', true);
+        }
+    }
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // reader.result is like "data:image/png;base64,XXXXX"
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 loadFolders();
 

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究背景 - 传统认证机制的局限性</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 16:9 标准 PPT 画布 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-width: 1920px;
+            max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6% 8%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 顶部页面主标题 */
+        .page-header {
+            z-index: 2;
+            animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page-title {
+            color: #111111;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 4px;
+            background-color: #0052CC;
+            border-radius: 2px;
+        }
+
+        /* 中部三栏不对称栅格 */
+        .grid-content {
+            margin: auto 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr; /* 留出充足空间给右侧可视化面板 */
+            gap: 40px;
+            z-index: 2;
+            align-items: stretch;
+        }
+
+        /* 痛点展示区 */
+        .pain-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 32px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        
+        .pain-section:nth-child(2) { animation-delay: 0.1s; }
+        .visual-panel { animation-delay: 0.2s; }
+
+        .pain-node {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .punchline {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+        .text-gray { color: #555555; }
+        .text-blue { color: #0052CC; }
+
+        .description {
+            color: #666666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* 🍏 右侧：苹果工业级九宫格留痕模拟器面板 */
+        .visual-panel {
+            background: rgba(244, 246, 249, 0.6);
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.01);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .panel-title {
+            color: #111111;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        /* 九宫格容器 */
+        .lock-matrix {
+            width: 200px;
+            height: 200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 24px;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        /* 九宫格点阵粒子 */
+        .matrix-dot {
+            background-color: #CBD5E1;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            margin: auto;
+            position: relative;
+            transition: background-color 0.3s;
+            z-index: 3;
+        }
+
+        /* 纯 CSS 模拟物理触控留痕（Smudge 漫反射红外残留） */
+        .matrix-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 44px;
+            height: 44px;
+            background: radial-gradient(circle, rgba(217, 56, 58, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 定时触发状态机：模拟滑动轨迹与留痕 */
+        .dot-active {
+            animation: dotTrigger 0.3s forwards;
+        }
+        .dot-smudge::after {
+            animation: smudgeReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* 虚拟滑动引导连线（SVG 硬件加速渲染） */
+        .svg-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .trace-line {
+            stroke: #0052CC;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            animation: drawTrace 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        /* 数据量化联动显示区 */
+        .counter-container {
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .counter-label {
+            font-size: 0.75rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .number-display {
+            font-family: -apple-system-font, monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111111;
+            transition: color 0.5s;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #888888;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #F1F5F9;
+            transition: all 0.5s;
+        }
+
+        /* 模拟联动状态下的颜色跳变 */
+        .alert-active { color: #D9383A !important; }
+        .badge-active { color: #FFFFFF !important; background: #D9383A !important; }
+
+        /* 底部论证短语 */
+        .panel-summary-text {
+            font-size: 0.8rem;
+            color: #555555;
+            line-height: 1.4;
+            border-left: 2px solid #0052CC;
+            padding-left: 8px;
+            width: 100%;
+            text-align: left;
+        }
+
+        /* 页脚 */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #E5E9F0;
+            padding-top: 20px;
+            color: #888888;
+            font-size: 0.8rem;
+            z-index: 2;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .footer-right { font-family: monospace; font-weight: 600; }
+
+        /* 🍏 精细物理缓动动画状态机机制 */
+        @keyframes drawTrace {
+            0% { stroke-dashoffset: 600; stroke: #0052CC; opacity: 1; }
+            45% { stroke-dashoffset: 0; stroke: #0052CC; opacity: 1; }
+            60% { opacity: 0; stroke-dashoffset: 0; }
+            100% { opacity: 0; stroke-dashoffset: 600; }
+        }
+
+        @keyframes smudgeReveal {
+            0%, 20% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            45% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            90% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.85; }
+            100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.85; }
+        }
+
+        @keyframes dotTrigger {
+            0% { background-color: #CBD5E1; }
+            100% { background-color: #0052CC; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.8rem; }
+            .punchline { font-size: 1.15rem; }
+            .description { font-size: 0.85rem; }
+            .lock-matrix { width: 160px; height: 160px; gap: 16px; }
+            .number-display { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">传统认证机制的局限性与安全威胁</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="pain-section">
+                <div class="pain-node">
+                    <div class="punchline text-gray">记忆负载冲突</div>
+                    <div class="description">受人类大脑长期留存局限，非结构化复杂文本字符串极难被用户精确记忆。</div>
+                </div>
+                <div class="pain-node">
+                    <div class="shadow-box"></div>
+                    <div class="punchline text-gray">跨平台凭证干扰</div>
+                    <div class="description">多节点环境下，多账户密码间的混淆记忆干扰会导致错误率大幅上升。</div>
+                </div>
+                <div class="pain-node">
+                    <div class="punchline text-gray">物理侧渠道威胁</div>
+                    <div class="description">输入行为暴露在外部空间，极易受到恶意录屏或充电侧信道监听攻击。</div>
+                </div>
+            </div>
+
+            <div class="pain-section">
+                <div class="pain-node">
+                    <div class="punchline text-blue">密码空间稀疏</div>
+                    <div class="description">传统 Android 3×3 九宫格解锁方案空间狭小，易遭受离线暴力破解。</div>
+                </div>
+                <div class="pain-node">
+                    <div class="punchline text-blue">物理留痕暴露</div>
+                    <div class="description">方案对触控屏油脂物理残留（Smudge）防御低下，易被逆向提取轨迹。</div>
+                </div>
+                <div class="pain-node">
+                    <div class="punchline text-blue">肩窥脆弱性</div>
+                    <div class="description">传统的连续线段画图轨迹极易在物理旁观或环境监控下被捕获并复刻。</div>
+                </div>
+            </div>
+
+            <div class="visual-panel">
+                <div class="panel-title">九宫格物理残留 (Smudge Attack) 空间折损模拟</div>
+                
+                <div class="lock-matrix">
+                    <svg class="svg-overlay">
+                        <path d="M 33,33 L 166,33 L 33,166 L 166,166" class="trace-line" />
+                    </svg>
+                    
+                    <div class="matrix-dot id-1"></div>
+                    <div class="matrix-dot id-2"></div>
+                    <div class="matrix-dot id-3"></div>
+                    <div class="matrix-dot id-4"></div>
+                    <div class="matrix-dot id-5"></div>
+                    <div class="matrix-dot id-6"></div>
+                    <div class="matrix-dot id-7"></div>
+                    <div class="matrix-dot id-8"></div>
+                    <div class="matrix-dot id-9"></div>
+                </div>
+
+                <div class="counter-container">
+                    <div class="counter-label">Entropy Space / 安全空间评估</div>
+                    <div class="counter-row">
+                        <div class="number-display" id="entropy-num">389,112</div>
+                        <div class="status-badge" id="status-tag">基准空间</div>
+                    </div>
+                </div>
+
+                <div class="panel-summary-text">
+                    油脂痕迹暴露后，通过重力、反光等环境侧信道逆向推演，理论密码猜测空间将产生非线性暴跌，导致离线暴破效率成倍激增。
+                </div>
+            </div>
+
+        </div>
+
+        <div class="page-footer">
+            <div class="footer-left">RoundImage 成果汇报 · 汇报人：李健</div>
+            <div class="footer-right">2026/05/26</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const numDisplay = document.getElementById('entropy-num');
+            const statusTag = document.getElementById('status-tag');
+            
+            // 完美对齐 CSS 连线轨迹的时间轴状态机
+            const dots = {
+                1: document.querySelector('.id-1'),
+                2: document.querySelector('.id-2'),
+                3: document.querySelector('.id-3'),
+                7: document.querySelector('.id-7'),
+                9: document.querySelector('.id-9')
+            };
+
+            function runStateMachine() {
+                // 状态重置
+                numDisplay.innerText = "389,112";
+                numDisplay.classList.remove('alert-active');
+                statusTag.innerText = "基准空间";
+                statusTag.classList.remove('badge-active');
+                Object.values(dots).forEach(d => d.classList.remove('dot-active', 'dot-smudge'));
+
+                // 随着连线动画依次激活触控状态与物理留痕
+                setTimeout(() => { dots[1].classList.add('dot-active', 'dot-smudge'); }, 100);
+                setTimeout(() => { dots[2].classList.add('dot-active'); }, 300); // 穿过中点
+                setTimeout(() => { dots[3].classList.add('dot-active', 'dot-smudge'); }, 500);
+                setTimeout(() => { dots[7].classList.add('dot-active', 'dot-smudge'); }, 900);
+                setTimeout(() => { dots[9].classList.add('dot-active', 'dot-smudge'); }, 1300);
+
+                // 在留痕油脂完全显现的瞬间，数据看板联动暴跌并爆红
+                setTimeout(() => {
+                    // 模拟大厂滚动计数特效
+                    let current = 389112;
+                    const target = 14; // 油脂暴露后，确定路径下的极大收敛空间
+                    const timer = setInterval(() => {
+                        current = Math.floor(current - (current - target) * 0.25);
+                        numDisplay.innerText = current.toLocaleString();
+                        if (current <= target + 1) {
+                            clearInterval(timer);
+                            numDisplay.innerText = target;
+                            numDisplay.classList.add('alert-active');
+                            statusTag.innerText = "空间沦陷";
+                            statusTag.classList.add('badge-active');
+                        }
+                    }, 30);
+                }, 1100);
+            }
+
+            // 循环循环执行状态机，匹配 CSS 的无限循环节奏
+            runStateMachine();
+            setInterval(runStateMachine, 5500);
+        });
+    </script>
+</body>
+</html>

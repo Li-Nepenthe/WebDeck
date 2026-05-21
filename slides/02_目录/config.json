@@ -1,5 +1,5 @@
 {
-  "showInNav": true,
-  "hideNav": false,
+  "showInNav": false,
+  "hideNav": true,
   "hiddenFiles": []
 }

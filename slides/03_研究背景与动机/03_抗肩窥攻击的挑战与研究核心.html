@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究背景 - 抗肩窥攻击的挑战与研究核心 (动态博弈版)</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 16:9 标准 PPT 画布 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-width: 1920px;
+            max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6% 8%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 顶部页面主标题 */
+        .page-header {
+            z-index: 2;
+            animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page-title {
+            color: #111111;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 4px;
+            background-color: #0052CC;
+            border-radius: 2px;
+        }
+
+        /* 中部核心：非对称两栏栅格 */
+        .grid-content {
+            margin: auto 0;
+            display: grid;
+            grid-template-columns: 1fr 1.35fr; /* 调整比例，给右侧控制台更合理的视觉权重 */
+            gap: 60px;
+            z-index: 2;
+            align-items: start;
+        }
+
+        /* 左侧窄栏 */
+        .left-punchline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .giant-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #111111;
+            letter-spacing: -1px;
+        }
+
+        .giant-title span {
+            color: #0052CC;
+        }
+
+        .giant-subtitle {
+            font-size: 1.1rem;
+            color: #666666;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* 右侧宽栏 */
+        .right-evolution {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+        }
+
+        .evo-node {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .node-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111111;
+            letter-spacing: -0.2px;
+        }
+
+        .node-desc {
+            color: #555555;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .highlight-dark {
+            color: #111111;
+            font-weight: 600;
+        }
+
+        /* 🍏 升级后：苹果系统级交互模拟器控制台 */
+        .core-focus-box {
+            background: rgba(244, 246, 249, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            padding: 24px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 5px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.005);
+        }
+
+        .box-header {
+            color: #0052CC;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 联动图表仪表盘 */
+        .telemetry-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #FFFFFF;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+        }
+
+        .metric-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #555555;
+        }
+
+        .bar-wrapper {
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .metric-bar {
+            height: 100%;
+            width: 50%; /* 默认状态 */
+            background-color: #0052CC;
+            border-radius: 3px;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s;
+        }
+
+        /* 状态条异常报警颜色 */
+        .bar-danger { background-color: #D9383A; }
+        .bar-healthy { background-color: #0052CC; }
+
+        /* Apple 调音台阻尼滑块组件 */
+        .slider-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #888888;
+            font-weight: 500;
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #CBD5E1;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* 滑块圆形按钮按钮 */
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #FAFAFA;
+        }
+
+        .reset-btn {
+            font-size: 0.75rem;
+            color: #0052CC;
+            background: rgba(0, 82, 204, 0.06);
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            background: rgba(0, 82, 204, 0.12);
+        }
+
+        /* 底部标准页脚 */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #E5E9F0;
+            padding-top: 20px;
+            color: #888888;
+            font-size: 0.8rem;
+            z-index: 2;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .footer-right {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        /* 动画逻辑 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.8rem; }
+            .giant-title { font-size: 2.2rem; }
+            .node-header { font-size: 1.1rem; }
+            .node-desc { font-size: 0.85rem; }
+            .core-focus-box { padding: 16px; gap: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">抗肩窥攻击的开放挑战与研究核心</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-punchline">
+                <div class="giant-title">安全与可用的<br><span>平衡博弈</span></div>
+                <div class="giant-subtitle">Security vs Usability Dilemma</div>
+            </div>
+
+            <div class="right-evolution">
+                
+                <div class="evo-node">
+                    <div class="node-header">1. 现有抗肩窥方案的高认知负载</div>
+                    <div class="node-desc">
+                        现有研究为对抗旁观窥探，常采用复杂的交互逻辑（如混合双九宫格或复杂的点击画图）。这导致用户面临<span class="highlight-dark">极高的记忆开销与训练成本</span>，大幅牺牲了日常认证的可用性。
+                    </div>
+                </div>
+
+                <div class="evo-node">
+                    <div class="node-header">2. 分布式网络环境的鲁棒性瓶颈</div>
+                    <div class="node-desc">
+                        在高度动态的分布式网络场景中，方案不仅需要具备抗肩窥弹性，还必须具备轻量高效的<span class="highlight-dark">轻量容错验证机制</span>，以抵御移动端日常高频的偶发性误触。
+                    </div>
+                </div>
+
+                <div class="core-focus-box">
+                    <div class="box-header">
+                        <span>💡 联动模拟：设计空间指标演进</span>
+                        <button class="reset-btn" id="reset-slider">RoundImage 黄金平衡点</button>
+                    </div>
+
+                    <div class="telemetry-container">
+                        <div class="metric-row">
+                            <div class="metric-info">
+                                <span>用户记忆负载 (Memory Load)</span>
+                                <span id="val-memory">低负载 (25%)</span>
+                            </div>
+                            <div class="bar-wrapper">
+                                <div class="metric-bar bar-healthy" id="bar-memory" style="width: 25%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-info">
+                                <span>抗物理肩窥安全能力 (Anti-Peeping Security)</span>
+                                <span id="val-security">高防御 (78%)</span>
+                            </div>
+                            <div class="bar-wrapper">
+                                <div class="metric-bar bar-healthy" id="bar-security" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <span>← 侧重极致可用 (单轮无防御)</span>
+                            <span>侧重极端安全 (高开销多轨迹) →</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="custom-slider" id="博弈滑块">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <div class="footer-left">RoundImage 成果汇报 · 汇报人：李健</div>
+            <div class="footer-right">2026/05/26</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('博弈滑块');
+            const resetBtn = document.getElementById('reset-slider');
+            
+            const barMemory = document.getElementById('bar-memory');
+            const barSecurity = document.getElementById('bar-security');
+            
+            const txtMemory = document.getElementById('val-memory');
+            const txtSecurity = document.getElementById('val-security');
+
+            function updateMetrics(val) {
+                let memoryWidth, securityWidth;
+                
+                // 模拟非线性联动算法
+                if (val == 50) {
+                    // RoundImage 理想黄金平衡状态状态
+                    memoryWidth = 25;
+                    securityWidth = 78;
+                    
+                    txtMemory.innerText = "轻量负载 (25%)";
+                    txtSecurity.innerText = "高抗肩窥 (78%)";
+                    
+                    barMemory.className = "metric-bar bar-healthy";
+                    barSecurity.className = "metric-bar bar-healthy";
+                } else {
+                    // 传统线性演进空间博弈
+                    memoryWidth = Math.floor(val * 0.95);
+                    securityWidth = Math.floor((100 - val) * 0.4 + val * 0.5);
+                    
+                    // 动态更新文本与警报色状态机
+                    if (memoryWidth > 65) {
+                        txtMemory.innerText = `极端负载 (${memoryWidth}%) - 方案难落地`;
+                        barMemory.className = "metric-bar bar-danger";
+                    } else {
+                        txtMemory.innerText = `常规负载 (${memoryWidth}%)`;
+                        barMemory.className = "metric-bar bar-healthy";
+                    }
+
+                    if (securityWidth < 45) {
+                        txtSecurity.innerText = `几乎无防御 (${securityWidth}%) - 易被肩窥`;
+                        barSecurity.className = "metric-bar bar-danger";
+                    } else {
+                        txtSecurity.innerText = `防御强度 (${securityWidth}%)`;
+                        barSecurity.className = "metric-bar bar-healthy";
+                    }
+                }
+
+                // 驱动硬件加速渲染
+                barMemory.style.width = memoryWidth + '%';
+                barSecurity.style.width = securityWidth + '%';
+            }
+
+            // 监听现场滑块拖拽事件
+            slider.addEventListener('input', (e) => {
+                updateMetrics(e.target.value);
+            });
+
+            // 点击复位按钮，优雅回弹至 RoundImage 平衡态
+            resetBtn.addEventListener('click', () => {
+                slider.value = 50;
+                updateMetrics(50);
+            });
+            
+            // 初始化保持平衡态
+            updateMetrics(50);
+        });
+    </script>
+</body>
+</html>

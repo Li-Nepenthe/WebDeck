@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究背景 - 视觉记忆优势</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 16:9 标准 PPT 画布 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-width: 1920px;
+            max-height: 1080px;
+            background: #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6% 8%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 🍏 苹果风流体背景动效 - 极轻微，提升空间质感 */
+        .ambient-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 80% 20%, rgba(0, 82, 204, 0.03) 0%, transparent 40%),
+                        radial-gradient(circle at 20% 80%, rgba(0, 82, 204, 0.02) 0%, transparent 40%);
+            animation: ambientMove 20s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+
+        @keyframes ambientMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1) translateX(20px); }
+        }
+
+        /* 顶部页面主标题 */
+        .page-header {
+            z-index: 2;
+            animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page-title {
+            color: #111111;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px; left: 0;
+            width: 40px; height: 4px;
+            background-color: #0052CC;
+            border-radius: 2px;
+        }
+
+        /* 中部核心：非对称栅格 */
+        .grid-content {
+            margin: auto 0;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 80px;
+            z-index: 2;
+            align-items: start;
+        }
+
+        /* 左侧：视觉优势实验对比 */
+        .left-visual-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .giant-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #111111;
+            letter-spacing: -1px;
+        }
+        .giant-title span { color: #0052CC; }
+
+        /* 记忆对比模拟器容器 */
+        .memory-experiment {
+            background: rgba(244, 246, 249, 0.8);
+            border-radius: 12px;
+            padding: 24px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exp-label {
+            position: absolute;
+            top: 12px; left: 16px;
+            font-size: 0.7rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 文本 vs 图像的循环切换动效 */
+        .exp-content {
+            display: flex;
+            gap: 15px;
+            font-family: monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #555555;
+            animation: expToggle 6s infinite;
+        }
+
+        @keyframes expToggle {
+            0%, 45% { opacity: 0; transform: translateY(10px); }
+            50%, 95% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; }
+        }
+
+        .icon-grid {
+            display: flex;
+            gap: 20px;
+            font-size: 2rem;
+            position: absolute;
+            animation: iconToggle 6s infinite;
+        }
+
+        @keyframes iconToggle {
+            0%, 45% { opacity: 1; transform: translateY(0); }
+            50%, 100% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* 右侧节点 */
+        .right-evolution {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            z-index: 2;
+        }
+
+        .evo-node {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .evo-node:nth-child(1) { animation-delay: 0.2s; }
+        .evo-node:nth-child(2) { animation-delay: 0.4s; }
+        .evo-node:nth-child(3) { animation-delay: 0.6s; }
+
+        .node-header {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #111111;
+            letter-spacing: -0.2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 苹果风格的序号圆点 */
+        .node-header::before {
+            content: '';
+            width: 8px; height: 8px;
+            background-color: #0052CC;
+            border-radius: 50%;
+        }
+
+        .node-desc {
+            color: #555555;
+            font-size: 1rem;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+        .highlight-dark { color: #111111; font-weight: 600; }
+
+        /* 页脚 */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #E5E9F0;
+            padding-top: 20px;
+            color: #888888;
+            font-size: 0.8rem;
+            z-index: 2;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+        }
+
+        .footer-right { font-family: monospace; font-weight: 600; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.8rem; }
+            .giant-title { font-size: 2.2rem; }
+            .memory-experiment { height: 120px; }
+            .node-header { font-size: 1.15rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg"></div>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">视觉记忆优势与图形密码的兴起</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-visual-demo">
+                <div class="giant-title">视觉 <span>红利</span><br>优势</div>
+                
+                <div class="memory-experiment">
+                    <span class="exp-label">Cognitive Load Test / 认知载荷测试</span>
+                    
+                    <div class="exp-content">
+                        <span>#k9&mP</span><span>$2zW!q</span>
+                    </div>
+
+                    <div class="icon-grid">
+                        <span>🍓</span><span>🐻</span><span>🥑</span><span>⭐</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.85rem; color: #888; line-height: 1.4;">
+                    * 图像优势效应：人类对图形信息的留存率和识别速度比纯文本高出约 6.5 倍。
+                </div>
+            </div>
+
+            <div class="right-evolution">
+                <div class="evo-node">
+                    <div class="node-header">认知科学下的认证演进</div>
+                    <div class="node-desc">
+                        利用视觉机能进行身份验证，能有效规避传统文本密码由于<span class="highlight-dark">非结构化特征</span>导致的记忆负担，从生理基础上降低了分布式系统中的“认证排斥感”。
+                    </div>
+                </div>
+
+                <div class="evo-node">
+                    <div class="node-header">主流学术流派的交互范式</div>
+                    <div class="node-desc">
+                        业界已形成四大主流范式：从经典的<span class="highlight-dark">人脸识别</span>（认知基准）到<span class="highlight-dark">自由绘图</span>（纯回忆），再到目前最具落地潜力的<span class="highlight-dark">空间点触</span>与<span class="highlight-dark">混合认证系统</span>。
+                    </div>
+                </div>
+
+                <div class="evo-node">
+                    <div class="node-header">为什么聚焦“图像选择”模式</div>
+                    <div class="node-desc">
+                        相比于复杂的绘制轨迹，从图像池中进行<span class="highlight-dark">多轮图像识别</span>是图形认证中最基础、最符合直觉的操作。本研究旨在攻克该模式在传统环境下难以抗衡肩窥攻击的短板。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="page-footer">
+            <div class="footer-left">RoundImage 成果汇报 · 汇报人：李健</div>
+            <div class="footer-right">2026/05/26</div>
+        </div>
+    </div>
+
+</body>
+</html>

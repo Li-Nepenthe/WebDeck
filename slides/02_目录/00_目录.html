@@ -1,50 +1,229 @@
-<style>
-  .toc-page { padding: 2rem; }
-  .toc-page .toc-list { list-style: none; padding: 0; margin-top: 3rem; display: flex; flex-direction: column; gap: 1.2rem;}
-  .toc-page .toc-item {
-    display: flex; align-items: center; gap: 2rem;
-    padding: 1.5rem 2rem;
-    background: var(--glass-bg); border-radius: 12px;
-    border-left: 0px solid var(--accent-color);
-    box-shadow: 0 4px 12px var(--shadow-color);
-    transition: all 0.3s ease;
-  }
-  .toc-page .toc-item:hover { border-left-width: 6px; transform: translateX(10px); box-shadow: 0 8px 20px var(--shadow-color); }
-  .toc-page .toc-num { font-size: 2.2rem; font-weight: 800; color: var(--accent-color); min-width: 3rem; }
-  .toc-page .toc-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
-  .toc-page .toc-desc { font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.4rem; }
-</style>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoundImage 论文汇报 - 目录页</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-<div class="toc-page">
-  <h1>汇报提纲</h1>
-  <ul class="toc-list">
-    <li class="toc-item">
-      <span class="toc-num">01</span>
-      <div>
-        <div class="toc-title">研究背景</div>
-        <div class="toc-desc">传统密码缺陷与图形密码的安全性挑战</div>
-      </div>
-    </li>
-    <li class="toc-item">
-      <span class="toc-num">02</span>
-      <div>
-        <div class="toc-title">核心设计 (RoundImage)</div>
-        <div class="toc-desc">多轮图像选择机制与系统架构 [cite: 8]</div>
-      </div>
-    </li>
-    <li class="toc-item">
-      <span class="toc-num">03</span>
-      <div>
-        <div class="toc-title">实验与评估</div>
-        <div class="toc-desc">针对肩窥攻击的防御效果与可用性测试 [cite: 9, 10]</div>
-      </div>
-    </li>
-    <li class="toc-item">
-      <span class="toc-num">04</span>
-      <div>
-        <div class="toc-title">总结与展望</div>
-        <div class="toc-desc">研究结论及物联网环境下的未来工作 [cite: 11]</div>
-      </div>
-    </li>
-  </ul>
-</div>
+        /* 16:9 标准 PPT 演示画布：延续纯白极简风格 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw; /* 完美的 16:9 比例锁定 */
+            max-width: 1920px;
+            max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6% 8%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 右侧轻淡几何微光：保持全局视觉资产一致 */
+        .slide-container::after {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 65%;
+            height: 150%;
+            background: radial-gradient(circle at 70% 30%, rgba(0, 82, 204, 0.015) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 顶部页面标题区 */
+        .page-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            border-bottom: 1px solid #E5E9F0;
+            padding-bottom: 20px;
+            z-index: 2;
+            animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page-title {
+            color: #111111;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            color: #0052CC; /* 品牌深蓝色 */
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* 中部目录纵向数字栅格列表 */
+        .agenda-list {
+            margin: auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* 模块间的呼吸留白 */
+            max-width: 75%;
+            z-index: 2;
+        }
+
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(0, 82, 204, 0.08);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* 递增动画延迟，产生优雅的层叠入场效果 */
+        .agenda-item:nth-child(1) { animation-delay: 0.1s; }
+        .agenda-item:nth-child(2) { animation-delay: 0.2s; }
+        .agenda-item:nth-child(3) { animation-delay: 0.3s; }
+        .agenda-item:nth-child(4) { animation-delay: 0.4s; }
+        .agenda-item:nth-child(5) { animation-delay: 0.5s; }
+
+        /* 序列号样式：大厂工业级无衬线加粗 */
+        .agenda-number {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0052CC;
+            min-width: 48px;
+            position: relative;
+        }
+
+        /* 纵向微型锚点点缀 */
+        .agenda-number::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 14px;
+            background-color: rgba(0, 82, 204, 0.3);
+            border-radius: 1px;
+        }
+
+        /* 核心中文目录项 */
+        .agenda-text-cn {
+            color: #222222;
+            font-size: 1.3rem;
+            font-weight: 600;
+            min-width: 240px;
+        }
+
+        /* 辅助英文目录项：展现学术严谨度 */
+        .agenda-text-en {
+            color: #888888;
+            font-size: 1.05rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        /* 底部页脚：保持与封面相同的品牌基调 */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #E5E9F0;
+            padding-top: 20px;
+            color: #888888;
+            font-size: 0.8rem;
+            z-index: 2;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+        }
+
+        .footer-left {
+            letter-spacing: 0.5px;
+        }
+
+        .footer-right {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        /* 动画逻辑 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式自适应 */
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.8rem; }
+            .agenda-text-cn { font-size: 1.15rem; min-width: 200px; }
+            .agenda-text-en { font-size: 0.95rem; }
+            .agenda-number { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">汇报目录</h2>
+            <span class="page-subtitle">Agenda</span>
+        </div>
+
+        <div class="agenda-list">
+            <div class="agenda-item">
+                <div class="agenda-number">01</div>
+                <div class="agenda-text-cn">背景与动机</div>
+                <div class="agenda-text-en">Background & Motivation</div>
+            </div>
+            <div class="agenda-item">
+                <div class="agenda-number">02</div>
+                <div class="agenda-text-cn">核心方案设计</div>
+                <div class="agenda-text-en">Methodology & Architecture</div>
+            </div>
+            <div class="agenda-item">
+                <div class="agenda-number">03</div>
+                <div class="agenda-text-cn">实验与结果分析</div>
+                <div class="agenda-text-en">Evaluation & Results</div>
+            </div>
+            <div class="agenda-item">
+                <div class="agenda-number">04</div>
+                <div class="agenda-text-cn">关键讨论与挑战</div>
+                <div class="agenda-text-en">Discussion & Open Challenges</div>
+            </div>
+            <div class="agenda-item">
+                <div class="agenda-number">05</div>
+                <div class="agenda-text-cn">总结与展望</div>
+                <div class="agenda-text-en">Conclusion & Future Work</div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <div class="footer-left">RoundImage 成果汇报 · 汇报人：李健</div>
+            <div class="footer-right">2026/05/26</div>
+        </div>
+    </div>
+
+</body>
+</html>

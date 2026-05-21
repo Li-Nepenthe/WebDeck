@@ -511,25 +511,6 @@ body::before {
     box-shadow: 0 10px 25px -5px var(--accent-light);
 }
 
-/* Progress bar */
-#progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 6px;
-    background: rgba(0, 94, 170, 0.1);
-    z-index: 100;
-}
-
-#progress-bar {
-    height: 100%;
-    background: var(--accent-color);
-    width: 0%;
-    transition: width 0.3s ease-out;
-    box-shadow: 0 0 10px var(--accent-light);
-}
-
 /* Annotation feature */
 .annotation-canvas {
   position: absolute;
@@ -562,7 +543,7 @@ body::before {
     body::before { 
         display: none !important; 
     }
-    #top-nav, #controls, #progress, .annotation-canvas, #eraser-modal, #laser-canvas { 
+    #top-nav, #controls, .annotation-canvas, #eraser-modal, #laser-canvas { 
         display: none !important; 
     }
     #app, #presentation { 
