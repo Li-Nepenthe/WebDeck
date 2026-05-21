@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoundImage 论文汇报封面</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #050811;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 16:9 标准 PPT 演示看板容器 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw; /* 完美的 16:9 比例锁定 */
+            max-width: 1920px;
+            max-height: 1080px;
+            /* 高级渐变微光背景：右上角青色霓虹，左下角深蓝，整体深邃 */
+            background: radial-gradient(circle at 85% 15%, rgba(0, 242, 254, 0.15) 0%, transparent 55%),
+                        radial-gradient(circle at 15% 85%, rgba(79, 172, 254, 0.08) 0%, transparent 60%),
+                        #0B0F19;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5% 7%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 汇报风格：数码科技网格背景底纹 */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 顶部期刊/会议元数据信息 */
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 2;
+            animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .journal-badge {
+            background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+            color: #0B0F19;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .journal-name {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* 中部核心主标题区域 */
+        .main-content {
+            margin: auto 0;
+            max-width: 82%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 汇报常用视觉锚点：渐变装饰线条 */
+        .title-line {
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, #00F2FE, #4FACFE);
+            margin-bottom: 30px;
+            border-radius: 3px;
+            animation: expandWidth 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        h1 {
+            color: #FFFFFF;
+            font-size: 3.4rem;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+            margin-bottom: 25px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        /* 重点强化词：极光渐变字 */
+        h1 span.highlight {
+            background: linear-gradient(90deg, #00F2FE 0%, #4FACFE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 1.3rem;
+            font-weight: 400;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        /* 底部作者与标签区域 */
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 3.5%;
+            z-index: 2;
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .presenter-box .label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .presenter-names {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .presenter-names span {
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 300;
+            margin: 0 10px;
+        }
+
+        .tag-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tech-tag {
+            color: #00F2FE;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(0, 242, 254, 0.06);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 5px 14px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 精细流畅的动效增加汇报高级感 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes expandWidth {
+            from { width: 0; }
+            to { width: 80px; }
+        }
+
+        /* 自适应屏幕缩放，确保大屏展示不崩塌 */
+        @media (max-width: 1400px) {
+            h1 { font-size: 2.8rem; }
+            .subtitle { font-size: 1.1rem; }
+            .presenter-names { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="header-meta">
+            <span class="journal-badge">IEEE IoT-J</span>
+            <span class="journal-name">IEEE Internet of Things Journal, Vol. 12, No. 12, June 2025</span>
+        </div>
+
+        <div class="main-content">
+            <div class="title-line"></div>
+            <h1>RoundImage: Toward Secure <span class="highlight">Graphical Password</span><br>Authentication via Rounded Image Selection in IoT</h1>
+            <p class="subtitle">基于多轮图像选择与容错验证机制的物联网抗窥探图形密码认证框架成果汇报</p>
+        </div>
+
+        <div class="footer-info">
+            <div class="presenter-box">
+                <div class="label">汇报人 / 分享作者</div>
+                <div class="presenter-names">Xinyuan Qin<span>|</span>Wenjuan Li (通讯)<span>|</span>Philip Rosenberg</div>
+            </div>
+            <div class="tag-box">
+                <span class="tech-tag">IoT Security</span>
+                <span class="tech-tag">Graphical Password</span>
+                <span class="tech-tag">Anti-Shoulder-Surfing</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

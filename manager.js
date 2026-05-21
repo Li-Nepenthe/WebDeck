@@ -32,6 +32,15 @@ const customConfirmMessage = document.getElementById('customConfirmMessage');
 const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
 const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
 
+const editPageModal = document.getElementById('editPageModal');
+const editPageTitleSpan = document.getElementById('editPageTitleSpan');
+const closeEditPageBtn = document.getElementById('closeEditPageBtn');
+const cancelEditPageBtn = document.getElementById('cancelEditPageBtn');
+const confirmEditPageBtn = document.getElementById('confirmEditPageBtn');
+
+let currentEditFolder = null;
+let currentEditFilename = null;
+
 let currentActiveFolder = null;
 let currentAddPageFolder = null;
 const IFRAME_RENDER_HINT_REGEX = /<!DOCTYPE\s+html|<html[\s>]|<head[\s>]|<body[\s>]|<script[\s>]|<link[\s>]|<meta[\s>]|<base[\s>]|<title[\s>]/i;
@@ -518,6 +527,7 @@ function buildFolderActions(folder) {
 function buildFileActions(file) {
     return `
         <div class="item-actions">
+            <button class="edit-file-btn" type="button" title="编辑 HTML 代码" style="padding:4px 8px;">&#9998; 编辑</button>
             <button class="add-page-btn rename-file-btn" type="button" title="重命名页面" style="padding:4px 8px;">✏️</button>
             <button class="visibility-toggle ${file.visible ? 'is-on' : 'is-off'}" type="button">
                 ${file.visible ? '页面显示' : '页面隐藏'}
@@ -650,6 +660,11 @@ async function loadFolders() {
                                     previewIframe.srcdoc = `<div style="padding:20px; color:red;">预览加载失败</div>`;
                                 });
                         }
+                    };
+
+                    item.querySelector('.edit-file-btn').onclick = async event => {
+                        event.stopPropagation();
+                        openEditPageModal(folder.name, file.filename, file.title || file.filename);
                     };
 
                     item.querySelector('.rename-file-btn').onclick = async event => {
@@ -984,6 +999,87 @@ document.addEventListener('keydown', event => {
 });
 
 loadFolders();
+
+// --- 编辑 HTML 弹窗逻辑 ---
+async function openEditPageModal(folderName, filename, displayName) {
+    currentEditFolder = folderName;
+    currentEditFilename = filename;
+    editPageTitleSpan.textContent = `${folderName} / ${displayName.replace(/\.html$/i, '')}`;
+
+    editPageModal.classList.add('show');
+    editPageModal.setAttribute('aria-hidden', 'false');
+
+    // 读取文件内容
+    try {
+        const res = await fetch(`/api/get-file?folder=${encodeURIComponent(folderName)}&filename=${encodeURIComponent(filename)}`);
+        const data = await res.json();
+        if (data.success) {
+            if (window.editPageEditor) {
+                window.editPageEditor.setValue(data.content);
+                // 将光标移到文件首行
+                window.editPageEditor.setPosition({ lineNumber: 1, column: 1 });
+                window.editPageEditor.focus();
+            }
+        } else {
+            showToast(`读取文件失败：${data.error || '未知错误'}`, true);
+            closeEditPageModal();
+        }
+    } catch (err) {
+        showToast('读取文件失败', true);
+        closeEditPageModal();
+    }
+}
+
+function closeEditPageModal() {
+    editPageModal.classList.remove('show');
+    editPageModal.setAttribute('aria-hidden', 'true');
+    currentEditFolder = null;
+    currentEditFilename = null;
+}
+
+closeEditPageBtn.addEventListener('click', closeEditPageModal);
+cancelEditPageBtn.addEventListener('click', closeEditPageModal);
+
+confirmEditPageBtn.addEventListener('click', async () => {
+    if (!currentEditFolder || !currentEditFilename) return;
+
+    const content = window.editPageEditor ? window.editPageEditor.getValue() : '';
+
+    try {
+        const result = await postJson('/api/save-file', {
+            folder: currentEditFolder,
+            filename: currentEditFilename,
+            content
+        });
+
+        if (result.success) {
+            const savedFilename = currentEditFilename;
+            showToast(`已保存：${savedFilename}`);
+            closeEditPageModal();
+            // 如果该文件正在预览中，刷新预览 iframe
+            const activeSubItem = document.querySelector('.sub-item.active');
+            if (activeSubItem && activeSubItem.dataset.filename === savedFilename) {
+                activeSubItem.click();
+            }
+        } else {
+            showToast(`保存失败：${result.error || '未知错误'}`, true);
+        }
+    } catch {
+        showToast('保存失败，请检查服务', true);
+    }
+});
+
+editPageModal.addEventListener('click', event => {
+    if (event.target === editPageModal) {
+        closeEditPageModal();
+    }
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && editPageModal.classList.contains('show')) {
+        closeEditPageModal();
+    }
+});
 
 // --- 心跳上报逻辑：每2秒告知后端页面仍处于活跃状态 ---
 setInterval(() => {

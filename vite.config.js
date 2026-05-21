@@ -211,11 +211,19 @@ function buildReadmeContent() {
         '',
         '---',
         '',
-        '## 🤖 WebDeck HTML 代码规范',
+        '## 🤖 WebDeck HTML 幻灯片生成提示词',
         '',
-        '将以下规范发送给任意 AI 助手，即可确保其生成的 HTML 代码兼容 WebDeck 框架。具体的演示内容、章节结构、页面数量等由你在对话中自行决定。',
+        '将以下提示词复制到 AI 助手的「自定义指令」中，AI 就会在你要求生成 HTML 时自动按规范输出。',
         '',
-        '> 详细规范请参见项目根目录下的 `README.md` 文件。',
+        '### 核心要点',
+        '',
+        '1. **输出完整 HTML 文档**：必须包含 `<!DOCTYPE html>`、`<html>`、`<head>`、`<body>` 标签。框架会自动检测完整文档并通过 iframe 隔离渲染。',
+        '2. **必须包含 `<title>` 标签**：管理台使用 title 内容作为页面显示名称。',
+        '3. **不要用 markdown 代码块包裹**：直接输出纯 HTML，前后不加 ``` 符号。',
+        '4. **追求演示级视觉品质**：深色背景 + 渐变光效 + 微动画，不要白底黑字的简陋页面。',
+        '5. **只在用户要求生成 HTML 时启用**：正常对话不受影响。',
+        '',
+        '> 完整的提示词模板请参见项目根目录下的 `README.md` 文件。',
     ].join('\n');
 }
 
@@ -510,6 +518,68 @@ export default defineConfig({
                             if (fs.existsSync(oldPath)) fs.renameSync(oldPath, newPath);
                             res.setHeader('Content-Type', 'application/json');
                             res.end(JSON.stringify({ success: true }));
+                        }
+                        return;
+                    }
+
+                    if (req.url.startsWith('/api/get-file') && req.method === 'GET') {
+                        const urlObj = new URL(req.url, 'http://localhost');
+                        const folder = urlObj.searchParams.get('folder');
+                        const filename = urlObj.searchParams.get('filename');
+                        if (folder && filename) {
+                            try {
+                                const filePath = path.resolve(path.join(slidesDir, folder, filename));
+                                // Safety: ensure resolved path is within slidesDir
+                                if (!filePath.startsWith(path.resolve(slidesDir))) {
+                                    res.statusCode = 403;
+                                    res.end(JSON.stringify({ success: false, error: 'Forbidden' }));
+                                    return;
+                                }
+                                if (!fs.existsSync(filePath)) {
+                                    res.statusCode = 404;
+                                    res.end(JSON.stringify({ success: false, error: 'File not found' }));
+                                    return;
+                                }
+                                const content = fs.readFileSync(filePath, 'utf-8');
+                                res.setHeader('Content-Type', 'application/json');
+                                res.end(JSON.stringify({ success: true, content }));
+                            } catch (error) {
+                                res.statusCode = 500;
+                                res.end(JSON.stringify({ success: false, error: error.message }));
+                            }
+                        } else {
+                            res.statusCode = 400;
+                            res.end(JSON.stringify({ success: false, error: 'Missing folder or filename' }));
+                        }
+                        return;
+                    }
+
+                    if (req.url === '/api/save-file' && req.method === 'POST') {
+                        const body = await parseJsonBody(req);
+                        if (body.folder && body.filename && body.content !== undefined) {
+                            try {
+                                const filePath = path.resolve(path.join(slidesDir, body.folder, body.filename));
+                                // Safety: ensure resolved path is within slidesDir
+                                if (!filePath.startsWith(path.resolve(slidesDir))) {
+                                    res.statusCode = 403;
+                                    res.end(JSON.stringify({ success: false, error: 'Forbidden' }));
+                                    return;
+                                }
+                                if (!fs.existsSync(filePath)) {
+                                    res.statusCode = 404;
+                                    res.end(JSON.stringify({ success: false, error: 'File not found' }));
+                                    return;
+                                }
+                                fs.writeFileSync(filePath, body.content, 'utf-8');
+                                res.setHeader('Content-Type', 'application/json');
+                                res.end(JSON.stringify({ success: true }));
+                            } catch (error) {
+                                res.statusCode = 500;
+                                res.end(JSON.stringify({ success: false, error: error.message }));
+                            }
+                        } else {
+                            res.statusCode = 400;
+                            res.end(JSON.stringify({ success: false, error: 'Missing folder, filename or content' }));
                         }
                         return;
                     }

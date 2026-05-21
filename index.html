@@ -535,6 +535,45 @@
             background: #ef4444;
             box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
         }
+
+        /* 编辑 HTML 弹窗 */
+        #editPageModal .readme-panel {
+            max-width: 1100px;
+            width: 92vw;
+            max-height: 90vh;
+        }
+
+        #editPageModal .readme-body {
+            padding: 20px 24px;
+        }
+
+        #editPageContentContainer {
+            height: 55vh;
+            min-height: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .edit-file-btn {
+            border: 1px solid #7c3aed;
+            background: #faf5ff;
+            color: #7c3aed;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .edit-file-btn:hover {
+            transform: translateY(-1px);
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
     </style>
 </head>
 <body>
@@ -606,6 +645,23 @@
         </div>
     </div>
 
+    <!-- 编辑已有页面 HTML 代码弹窗 -->
+    <div id="editPageModal" class="readme-modal" aria-hidden="true">
+        <div class="readme-panel">
+            <div class="readme-header">
+                <div class="readme-title">✏️ 编辑 HTML 代码 — <span id="editPageTitleSpan"></span></div>
+                <button id="closeEditPageBtn" class="readme-close" type="button" aria-label="关闭">×</button>
+            </div>
+            <div class="readme-body" style="display:flex; flex-direction:column; gap: 12px;">
+                <div id="editPageContentContainer"></div>
+                <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top:4px;">
+                    <button class="btn-secondary" id="cancelEditPageBtn">取消</button>
+                    <button class="btn-launch" id="confirmEditPageBtn">💾 保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast">操作成功</div>
 
     <!-- 统一风格的自定义输入弹窗 (代替 prompt) -->
@@ -661,6 +717,19 @@
                 minimap: { enabled: false },
                 automaticLayout: true,
                 wordWrap: 'on'
+            });
+
+            window.editPageEditor = monaco.editor.create(document.getElementById('editPageContentContainer'), {
+                value: '',
+                language: 'html',
+                theme: 'vs-dark',
+                minimap: { enabled: true },
+                automaticLayout: true,
+                wordWrap: 'on',
+                fontSize: 13,
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                folding: true
             });
         });
     </script>
