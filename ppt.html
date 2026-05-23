@@ -154,7 +154,24 @@
             document.querySelectorAll('.slide-iframe').forEach(iframe => {
                 iframe.onload = () => {
                     try {
-                        iframe.contentWindow.addEventListener('click', () => window.focus());
+                        const iframeWin = iframe.contentWindow;
+                        iframeWin.addEventListener('click', () => window.focus());
+                        iframeWin.addEventListener('contextmenu', e => e.preventDefault());
+                        // Forward mouse events so laser pointer works inside iframes
+                        ['mousedown', 'mousemove', 'mouseup'].forEach(evtType => {
+                            iframeWin.addEventListener(evtType, e => {
+                                const rect = iframe.getBoundingClientRect();
+                                document.dispatchEvent(new MouseEvent(evtType, {
+                                    clientX: e.clientX + rect.left,
+                                    clientY: e.clientY + rect.top,
+                                    button: e.button, ctrlKey: e.ctrlKey, metaKey: e.metaKey, bubbles: true
+                                }));
+                            });
+                        });
+                        // Forward wheel events so scroll-navigation works inside iframes
+                        iframeWin.addEventListener('wheel', e => {
+                            document.dispatchEvent(new WheelEvent('wheel', { deltaY: e.deltaY, bubbles: true }));
+                        }, { passive: true });
                     } catch(e) {}
                 };
                 const idx = parseInt(iframe.dataset.slideIdx, 10);
@@ -268,16 +285,20 @@
 
                 canvas.addEventListener('mousedown', event => {
                     if (event.button !== 0 || !isPenMode) return;
+                    const rect = canvas.getBoundingClientRect();
                     state.drawing = true;
-                    state.lastX = event.clientX;
-                    state.lastY = event.clientY;
+                    state.lastX = event.clientX - rect.left;
+                    state.lastY = event.clientY - rect.top;
                 });
 
                 canvas.addEventListener('mousemove', event => {
                     if (!state.drawing || !isPenMode) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
                     ctx.beginPath();
                     ctx.moveTo(state.lastX, state.lastY);
-                    ctx.lineTo(event.clientX, event.clientY);
+                    ctx.lineTo(x, y);
                     ctx.strokeStyle = penColor;
                     ctx.lineWidth = 4;
                     ctx.lineCap = 'round';
@@ -285,8 +306,8 @@
                     ctx.shadowBlur = 6;
                     ctx.shadowColor = penColor;
                     ctx.stroke();
-                    state.lastX = event.clientX;
-                    state.lastY = event.clientY;
+                    state.lastX = x;
+                    state.lastY = y;
                 });
 
                 canvas.addEventListener('mouseleave', () => {
@@ -303,8 +324,9 @@
 
         function resizeCanvas(canvas) {
             const ratio = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * ratio;
-            canvas.height = window.innerHeight * ratio;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
             const ctx = canvas.getContext('2d');
             ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         }
@@ -508,6 +530,41 @@
                 document.querySelectorAll('.annotation-canvas').forEach(resizeCanvas);
                 resizeLaserCanvas();
             });
+
+            // --- Mouse Wheel Navigation (smart: respects scrollable content) ---
+            let wheelCooldown = false;
+            document.addEventListener('wheel', event => {
+                if (wheelCooldown || isPenMode) return;
+                const activeSlide = document.querySelector('.slide.active');
+                if (activeSlide && !activeSlide.classList.contains('is-full-bleed')) {
+                    const content = activeSlide.querySelector('.slide-content');
+                    if (content && content.scrollHeight > content.clientHeight + 2) {
+                        const { scrollTop, scrollHeight, clientHeight } = content;
+                        if (event.deltaY > 0 && scrollTop + clientHeight < scrollHeight - 2) return;
+                        if (event.deltaY < 0 && scrollTop > 2) return;
+                    }
+                }
+                wheelCooldown = true;
+                setTimeout(() => wheelCooldown = false, 600);
+                if (event.deltaY > 0) nextSlide();
+                else if (event.deltaY < 0) prevSlide();
+            }, { passive: true });
+
+            // --- Edge Click Navigation Zones ---
+            const navOverlay = document.createElement('div');
+            navOverlay.style.cssText = 'position:fixed;inset:0;z-index:100;pointer-events:none;';
+            function createNavZone(side) {
+                const zone = document.createElement('div');
+                zone.className = 'nav-zone nav-zone-' + side;
+                zone.innerHTML = side === 'left'
+                    ? '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>'
+                    : '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+                zone.onclick = () => side === 'left' ? prevSlide() : nextSlide();
+                return zone;
+            }
+            navOverlay.appendChild(createNavZone('left'));
+            navOverlay.appendChild(createNavZone('right'));
+            document.body.appendChild(navOverlay);
 
             fadeLaser();
         }

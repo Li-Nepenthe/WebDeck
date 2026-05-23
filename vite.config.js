@@ -445,6 +445,77 @@ export default defineConfig({
                         return;
                     }
 
+                    if (req.url === '/api/import-project' && req.method === 'POST') {
+                        const body = await parseJsonBody(req);
+                        if (!body.html) {
+                            res.statusCode = 400;
+                            res.end(JSON.stringify({ success: false, error: '缺少 HTML 内容' }));
+                            return;
+                        }
+
+                        try {
+                            // Extract presentationData JSON from exported HTML
+                            const jsonMatch = body.html.match(/let\s+presentationData\s*=\s*(\{.+\});/);
+                            if (!jsonMatch) {
+                                res.statusCode = 400;
+                                res.end(JSON.stringify({ success: false, error: '无法从 HTML 中提取演示数据，请确认这是 WebDeck 导出的文件' }));
+                                return;
+                            }
+
+                            let importedData;
+                            try {
+                                importedData = JSON.parse(jsonMatch[1]);
+                            } catch (parseErr) {
+                                res.statusCode = 400;
+                                res.end(JSON.stringify({ success: false, error: '解析演示数据失败：' + parseErr.message }));
+                                return;
+                            }
+
+                            const chapters = importedData.chapters || [];
+                            const slides = importedData.slides || [];
+
+                            // Optionally clear existing slides
+                            if (body.clearExisting) {
+                                if (fs.existsSync(slidesDir)) {
+                                    fs.readdirSync(slidesDir, { withFileTypes: true })
+                                        .filter(d => d.isDirectory())
+                                        .forEach(d => fs.rmSync(path.join(slidesDir, d.name), { recursive: true, force: true }));
+                                }
+                            }
+
+                            ensureDir(slidesDir);
+
+                            // Recreate chapter directories with config
+                            for (const chapter of chapters) {
+                                const chapterDir = path.join(slidesDir, chapter.prefix);
+                                ensureDir(chapterDir);
+                                writeFolderConfig(chapterDir, {
+                                    showInNav: chapter.showInNav !== false,
+                                    hideNav: chapter.hideNav === true,
+                                    hiddenFiles: []
+                                });
+                            }
+
+                            // Write slide HTML files
+                            let importedCount = 0;
+                            for (const slide of slides) {
+                                const chapterDir = path.join(slidesDir, slide.chapterPrefix);
+                                ensureDir(chapterDir);
+                                const filename = slide.filename || `${String(importedCount + 1).padStart(2, '0')}_slide.html`;
+                                const filePath = path.join(chapterDir, filename);
+                                fs.writeFileSync(filePath, slide.html || slide.rawHtml || '', 'utf-8');
+                                importedCount++;
+                            }
+
+                            res.setHeader('Content-Type', 'application/json');
+                            res.end(JSON.stringify({ success: true, chapters: chapters.length, slides: importedCount }));
+                        } catch (error) {
+                            res.statusCode = 500;
+                            res.end(JSON.stringify({ success: false, error: error.message }));
+                        }
+                        return;
+                    }
+
                     if (req.url === '/api/reset-project' && req.method === 'POST') {
                         try {
                             if (fs.existsSync(slidesDir)) {

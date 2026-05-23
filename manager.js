@@ -6,6 +6,7 @@ const previewIframe = document.getElementById('previewIframe');
 const targetFolderDisplay = document.getElementById('targetFolderDisplay');
 const toastEl = document.getElementById('toast');
 const saveStandaloneBtn = document.getElementById('saveStandaloneBtn');
+const importProjectBtn = document.getElementById('importProjectBtn');
 const clearDistBtn = document.getElementById('clearDistBtn');
 const resetProjectBtn = document.getElementById('resetProjectBtn');
 const openDistBtn = document.getElementById('openDistBtn');
@@ -876,6 +877,60 @@ saveStandaloneBtn.addEventListener('click', async () => {
     } catch {
         showToast('导出失败，请检查本地服务', true);
     }
+});
+
+importProjectBtn.addEventListener('click', async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.html';
+
+    input.onchange = async () => {
+        if (!input.files || input.files.length === 0) return;
+
+        const file = input.files[0];
+        showToast('正在读取文件...');
+        const htmlContent = await file.text();
+
+        // Basic validation
+        if (!htmlContent.includes('presentationData')) {
+            showToast('此文件不是 WebDeck 导出的 HTML 文件', true);
+            return;
+        }
+
+        // Ask about clear mode
+        const clearExisting = await showCustomConfirm(
+            '选择导入模式',
+            `即将从「${file.name}」导入项目。\n\n选择「确认执行」→ 清空现有章节后导入（适合恢复/替换整个项目）\n选择「取消」→ 保留现有章节，追加导入内容`,
+            false
+        );
+
+        showToast('正在导入项目...');
+
+        try {
+            const res = await fetch('/api/import-project', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ html: htmlContent, clearExisting })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                showToast(`✅ 导入成功！已恢复 ${data.chapters} 个章节、${data.slides} 个页面`);
+                currentActiveFolder = null;
+                targetFolderDisplay.textContent = '请先在左侧选择一个章节';
+                dropzone.classList.add('disabled');
+                if (previewIframe) previewIframe.style.display = 'none';
+                dropzone.style.display = 'flex';
+                loadFolders();
+            } else {
+                showToast(`导入失败：${data.error}`, true);
+            }
+        } catch {
+            showToast('导入失败，请检查本地服务', true);
+        }
+    };
+
+    input.click();
 });
 
 clearDistBtn.addEventListener('click', async () => {
