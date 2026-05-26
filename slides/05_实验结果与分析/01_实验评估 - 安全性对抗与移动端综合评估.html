@@ -40,7 +40,7 @@
         .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
         .text-blue { color: #0052CC; }
         .text-gray { color: #555555; }
-        .description { color: #666666; font-size: 0.9rem; line-height: 1.45; }
+        .description { color: #666666; font-size: 1rem; line-height: 1.45; }
 
         /* 右侧：🍏 终极高密三线表集成大屏 */
         .table-console { display: flex; flex-direction: column; gap: 14px; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
@@ -49,7 +49,7 @@
         .table-caption span { color: #0052CC; font-size: 0.75rem; font-weight: 500; }
 
         /* 标准学术三线表 */
-        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.82rem; }
+        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.92rem; }
         .academic-table th { font-weight: 700; color: #111111; padding: 6px 4px; border-top: 2px solid #111111; border-bottom: 1px solid #111111; }
         .academic-table td { padding: 7px 4px; color: #475569; border-bottom: 1px solid #E2E8F0; }
         .academic-table tr:last-child td { border-bottom: 2px solid #111111; }
@@ -58,7 +58,7 @@
         .highlight-secure { font-weight: 700; color: #10B981; background: rgba(16, 185, 129, 0.03); }
         .highlight-danger { font-weight: 700; color: #D9383A; }
 
-        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #10B981; padding-left: 8px; }
+        .console-note { font-size: 0.85rem; color: #555555; line-height: 1.4; border-left: 2px solid #10B981; padding-left: 8px; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
@@ -66,8 +66,8 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.6rem; }
             .punchline { font-size: 1.05rem; }
-            .description { font-size: 0.8rem; }
-            .academic-table { font-size: 0.75rem; }
+            .description { font-size: 0.9rem; }
+            .academic-table { font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -83,15 +83,15 @@
             <div class="left-theory">
                 <div class="theory-node">
                     <div class="punchline text-gray">IoT智能终端效能轻量化落地</div>
-                    <div class="description">在智能手机（Samsung Galaxy Note）真机环境下，本方案两轮与三轮模式的时间开销（TC）分别为 $16.7\,\text{s}$ 与 $19.7\,\text{s}$。相比传统双九宫格方案虽有微弱溢价，但完全符合 IoT 分布式架构对轻量化核验的可用性预期。</div>
+                    <div class="description">在智能手机（Samsung Galaxy Note）真机环境下，本方案两轮与三轮模式的时间开销（TC）分别为 $16.7\,\text{s}$ 与 $19.7\,\text{s}$。相比传统双九宫格方案略有增加，但满足 IoT 场景对认证效率的基本要求。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-blue">物理肩窥防御呈现断层式增益</div>
-                    <div class="description">对抗性测试（Table VIII）表明，传统双九宫格方案由于解锁轨迹物理暴露，肉眼肩窥破解率高达 **$55\% \sim 68\%$**。而本方案通过流式图像多轮洗牌，将肩窥破解率死死遏制在 **$15\% \sim 25\%$**（三轮组），安全性飙升近 3 倍。</div>
+                    <div class="description">对抗性测试（Table VIII）表明，传统双九宫格方案由于解锁轨迹物理暴露，肩窥破解率高达 **$55\% \sim 68\%$**。而本方案通过多轮图像随机刷新，将肩窥破解率控制在 **$15\% \sim 25\%$**（三轮组），相比竞争方案降低约 2.5~3 倍。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-gray">暴力破解空间实现彻底封锁</div>
-                    <div class="description">随机盲猜与暴力破解测试（Table VII）证实，随着选择轮次的递进，攻击成功率呈指数级断崖式暴跌。在三轮级联的状态机防御下，抗爆破破解率强行收敛至 **$0 \sim 1\%$**，具备工业级的抗探测边界。</div>
+                    <div class="description">随机盲猜与暴力破解测试（Table VII）证实，随着选择轮次的增加，攻击成功率显著降低。在三轮级联模式下，暴力破解成功率降至 **$0 \sim 1\%$**，达到了较高的安全防护水平。</div>
                 </div>
             </div>
 
@@ -171,8 +171,7 @@
                 </div>
 
                 <div class="console-note">
-                    <b>🍏 答辩演示导引：</b><br>
-                    评委请看右侧集成数据，传统双九宫格为了追求 13s 的极速体验，代价是出让了高达 68% 的可肩窥黑客红利。而本方案通过多轮无状态洗牌，在仅出让微弱时间代价的前提下，将肩窥与爆破成功率近乎双双归零，在分布式工程中达成了最佳的“可用性与安全折中”。
+                    传统双九宫格虽然登录时间较短（约13s），但肩窥破解率高达 68%。而本方案通过多轮随机刷新，在时间代价增加不大的前提下，有效降低了肩窥和暴力破解的成功率，实现了可用性与安全性的较好平衡。
                 </div>
 
             </div>

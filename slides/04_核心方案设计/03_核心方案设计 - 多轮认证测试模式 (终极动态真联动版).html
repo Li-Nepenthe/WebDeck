@@ -35,7 +35,7 @@
         .punchline { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.2px; }
         .text-gray { color: #555555; }
         .text-blue { color: #0052CC; }
-        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; font-weight: 400; }
+        .description { color: #666666; font-size: 1rem; line-height: 1.5; font-weight: 400; }
 
         /* 右侧：🍏 严格防错位 $4 \times 4$ 认证交互面板 */
         .auth-console {
@@ -80,7 +80,7 @@
         .btn-danger { background: #64748B; } 
         .btn-danger:hover { background: #475569; }
 
-        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; width: 100%; }
+        .console-note { font-size: 0.85rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; width: 100%; }
 
         /* 彻底拔除 page-footer 流，空出下边缘极其纯净空间 */
 
@@ -90,7 +90,7 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.6rem; }
             .punchline { font-size: 1.05rem; }
-            .description { font-size: 0.8rem; }
+            .description { font-size: 0.9rem; }
             .matrix-tile { font-size: 1.2rem; }
         }
     </style>
@@ -104,11 +104,11 @@
             <div class="left-theory">
                 <div class="theory-node">
                     <div class="punchline text-gray">4 × 4 认证空间缩减</div>
-                    <div class="description">登录认证阶段，系统将输入网格降维压缩至紧凑的 4×4 矩阵，每一轮固定向前端动态刷出 16 张洗牌后的图像（本演示已开启后端凭证测试审计模式）。</div>
+                    <div class="description">认证阶段使用 4×4 矩阵，每轮随机展示 16 张图像（本演示已开启后端凭证测试审计模式）。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-blue">3轮定长输入与噪声模糊</div>
-                    <div class="description">验证流程强制循环进行 3 轮，用户每轮均必须点击选择 4 张图，阻止肩窥者直接记录真实特征。单轮匹配率必须满足 $\ge 75\%$（即命中对 3 张）才判定为 Pass。</div>
+                    <div class="description">验证流程进行 3 轮，用户每轮选择 4 张图像，增加肩窥攻击的难度。单轮匹配率需满足 $\ge 75\%$（即正确识别 3 张及以上）方可通过。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-gray">天眼审计与延迟判定</div>
@@ -126,7 +126,7 @@
 
                 <div class="action-bar">
                     <div class="console-note" id="auth-tip">
-                        <b>💡 现场演示提示：</b> 为了模拟导师测试，已高亮用户选过的凭证。
+                        为了模拟测试，已高亮用户选过的凭证。
                     </div>
                     <div class="btn-group">
                         <button class="apple-btn btn-danger" id="clear-db-btn">重新注册</button>

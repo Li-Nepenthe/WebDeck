@@ -35,7 +35,7 @@
         .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
         .text-blue { color: #0052CC; }
         .text-gray { color: #555555; }
-        .description { color: #666666; font-size: 0.9rem; line-height: 1.45; }
+        .description { color: #666666; font-size: 1rem; line-height: 1.45; }
 
         /* 右侧：🍏 苹果大厂风原生学术表格大屏 */
         .table-console {
@@ -51,7 +51,7 @@
         .table-caption span { color: #0052CC; font-size: 0.75rem; font-weight: 500; }
 
         /* 严格的三线表学术样式重构 */
-        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem; }
+        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.92rem; }
         .academic-table th { font-weight: 700; color: #111111; padding: 8px 4px; border-top: 2px solid #111111; border-bottom: 1px solid #111111; }
         .academic-table td { padding: 8px 4px; color: #475569; border-bottom: 1px solid #E2E8F0; }
         .academic-table tr:last-child td { border-bottom: 2px solid #111111; } /* 三线表底线 */
@@ -59,7 +59,7 @@
         /* 高亮行或特征值 */
         .highlight-val { font-weight: 700; color: #0052CC; }
 
-        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; margin-top: 4px; }
+        .console-note { font-size: 0.85rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; margin-top: 4px; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
@@ -67,8 +67,8 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.6rem; }
             .punchline { font-size: 1.05rem; }
-            .description { font-size: 0.8rem; }
-            .academic-table { font-size: 0.75rem; }
+            .description { font-size: 0.9rem; }
+            .academic-table { font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -84,11 +84,11 @@
             <div class="left-theory">
                 <div class="theory-node">
                     <div class="punchline text-gray">两轮与三轮模式性能解耦</div>
-                    <div class="description">用户研究 1 重点考察了选择轮次变动对系统可用性边界的挤压。实验将 60 名参与者均分为 Group-1（2轮组）与 Group-2（3轮组），采集共 900 次交互记录，量化机制载荷。</div>
+                    <div class="description">用户研究 1 重点考察了选择轮次变动对系统可用性的影响。实验将 60 名参与者均分为 Group-1（2轮组）与 Group-2（3轮组），采集共 900 次交互记录进行分析。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-blue">高水准操作成功率收敛</div>
-                    <div class="description">数据表明，两组在确认与登录阶段均跑出了 92% 以上的高成功率。即使面临三轮复杂矩阵，用户的身份认证成功率依然稳定维持在 92.7%，充分论证了图形再认架构的高可用性。</div>
+                    <div class="description">数据显示，两组在确认与登录阶段的成功率均超过 92%。即使在三轮模式下，用户的身份认证成功率仍保持在 92.7%，验证了图形认证方案的可用性。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-gray">可用性与时间开销的权衡</div>
@@ -159,8 +159,7 @@
                 </div>
 
                 <div class="console-note">
-                    <b>🍏 答辩演示导引：</b><br>
-                    评委请看右侧 Table III 和 Table IV，尽管三轮模式在时间上增加了 4.1s，但两组的登录成功率和记忆留存率无显著统计学差异（$\rho > 0.05$），表明三轮方案在保障可用性的同时，成功通过增加轮次压缩了攻击空间。
+                    尽管三轮模式在时间上增加了 4.1s，但两组的登录成功率和记忆留存率无显著统计学差异（$p > 0.05$），表明三轮方案在保障可用性的同时，通过增加轮次压缩了攻击空间。
                 </div>
 
             </div>

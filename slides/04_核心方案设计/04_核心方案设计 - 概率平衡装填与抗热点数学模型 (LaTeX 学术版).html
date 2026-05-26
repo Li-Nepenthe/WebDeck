@@ -24,7 +24,7 @@
         }
         
         /* 顶部标题 */
-        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 2.5rem; }
         .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
         .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
 
@@ -36,7 +36,7 @@
         .math-node { display: flex; flex-direction: column; gap: 4px; }
         .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
         .text-blue { color: #0052CC; }
-        .description { color: #555555; font-size: 0.9rem; line-height: 1.5; }
+        .description { color: #555555; font-size: 1rem; line-height: 1.5; }
         
         /* 优化的公式显示卡片：压缩内边距防止 MathJax 展开时发生物理越界 */
         .formula-card {
@@ -56,7 +56,7 @@
         /* 核心指标卡片组 */
         .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .metric-card { background: #FFFFFF; padding: 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.01); box-shadow: 0 2px 8px rgba(0,0,0,0.01); }
-        .metric-label { font-size: 0.75rem; color: #666666; font-weight: 500; }
+        .metric-label { font-size: 0.85rem; color: #666666; font-weight: 500; }
         .metric-value { font-size: 1.35rem; font-weight: 800; color: #111111; margin-top: 2px; }
         .text-green { color: #10B981; }
 
@@ -72,11 +72,11 @@
         .bar-pill { width: 55%; background: #E2E8F0; border-radius: 4px 4px 0 0; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); min-height: 2px; position: relative; }
         .bar-pill:hover { background: #0052CC; }
         .bar-pill-active { background: #0052CC; } 
-        .col-label { font-size: 0.7rem; color: #666666; transform: scale(0.9); margin-bottom: -18px; }
-        .col-value { font-size: 0.65rem; color: #888888; position: absolute; top: -16px; left: 50%; transform: translateX(-50%) scale(0.85); opacity: 0; transition: opacity 0.2s; }
+        .col-label { font-size: 0.8rem; color: #666666; transform: scale(0.9); margin-bottom: -18px; }
+        .col-value { font-size: 0.75rem; color: #888888; position: absolute; top: -16px; left: 50%; transform: translateX(-50%) scale(0.85); opacity: 0; transition: opacity 0.2s; }
         .hist-col:hover .col-value { opacity: 1; }
 
-        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #10B981; padding-left: 8px; }
+        .console-note { font-size: 0.85rem; color: #555555; line-height: 1.4; border-left: 2px solid #10B981; padding-left: 8px; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
@@ -86,30 +86,30 @@
 
     <div class="slide-container tex2jax_process">
         <div class="page-header">
-            <h2 class="page-title">概率平衡装填与抗热点消除数学模型</h2>
+            <h2 class="page-title">为什么所有图像能均匀出现（数学原理）</h2>
         </div>
 
         <div class="grid-content">
             
             <div class="left-theory">
                 <div class="math-node">
-                    <div class="punchline text-gray">等比例装填映射方程</div>
-                    <div class="description">为切断用户心理学行为偏好（字典热点）对凭证空间的泄露，后台控制流在组装 $4 \times 4$ 认证矩阵时，严格受等比例配比约束方程控制：</div>
+                    <div class="punchline text-gray">等比例装填原则</div>
+                    <div class="description">为消除用户选择偏好导致的频率不均匀问题，后台在组装 $4 \times 4$ 认证矩阵时，遵循等比例配比约束方程：</div>
                     <div class="formula-card">
                         \[\frac{x}{16} = \frac{n}{100} \implies x = \frac{20}{100} \times 16 = 3.2\]
                     </div>
                     <div class="description">其中 $n=20$ 为用户持有的密码资产全集，公式推导出单轮网格中密码图像的期望曝光数恒定为 $3.2$ 张。</div>
                 </div>
                 <div class="math-node">
-                    <div class="punchline text-blue">无放回抽样超几何分布模型</div>
+                    <div class="punchline text-blue">单次出现的概率计算</div>
                     <div class="description">由于单轮网格内的图像互不重复，系统组装网格的过程在数学上严格服从<b>超几何分布</b>。单轮矩阵内真实密码出现个数 $k$ 的概率分布律公式为：</div>
                     <div class="formula-card">
                         \[P(X = k) = \frac{\binom{20}{k}\binom{80}{16-k}}{\binom{100}{16}}\]
                     </div>
                 </div>
                 <div class="math-node">
-                    <div class="punchline text-gray">统计学行为热点全面抹平</div>
-                    <div class="description"><b>定理 1 (Theorem 1) 证明：</b>在此控制流驱动下，无论用户对某张密码图有多高的选择偏好，在海量样本认证流中，密码图与干扰图对外的<b>曝光概率期望均被强制平摊收敛于恒定的 $1.25\%$</b>，从根本上消除了字典爆破侧信道特征。</div>
+                    <div class="punchline text-gray">最终结论：有效消除攻击热点</div>
+                    <div class="description"><b>定理 1 (Theorem 1) 证明：</b>在此机制下，无论用户对特定密码图的偏好程度如何，在大量认证过程中，密码图与干扰图的<b>曝光概率期望均收敛于 $1.25\%$</b>，有效消除了基于频率统计的字典攻击特征。</div>
                 </div>
             </div>
 
@@ -147,8 +147,7 @@
                 </div>
 
                 <div class="console-note">
-                    <b>🍏 答辩演示导引：</b><br>
-                    评委请看右侧分布图，单轮密码数刷出 $3$ 张和 $4$ 张的累计概率高达 $56.8\%$。我们在系统运行态执行边界截断，完美将整体期望锚定在数学收敛的最优区间。
+                    右侧分布图显示，单轮密码数出现 $3$ 张和 $4$ 张的累计概率高达 $56.8\%$。系统在运行时执行边界截断，将整体期望锐定在数学收敛的最优区间。
                 </div>
             </div>
 

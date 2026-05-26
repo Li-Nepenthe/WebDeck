@@ -159,7 +159,7 @@
         }
 
         .pillar-desc {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #666666;
             line-height: 1.5;
         }
@@ -167,7 +167,7 @@
         /* 映射对照高亮 */
         .mapping-tag {
             display: inline-block;
-            font-size: 0.75rem;
+            font-size: 0.82rem;
             font-weight: 600;
             padding: 1px 6px;
             border-radius: 4px;
@@ -193,7 +193,7 @@
             .giant-headline { font-size: 2.2rem; }
             .sub-statement { font-size: 0.85rem; }
             .pillar-name { font-size: 1.05rem; }
-            .pillar-desc { font-size: 0.8rem; }
+            .pillar-desc { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -210,7 +210,7 @@
                 <div class="proclaim-tag">Proposed Solution</div>
                 <h1 class="giant-headline">解耦冲突的<br><span>流式图像</span>验证</h1>
                 <p class="sub-statement">
-                    针对物联网与移动终端高度暴露的物理环境，本研究正式提出 <b>RoundImage</b> 认证方案。系统摒弃了传统的单次死板凭证匹配，转而构建了一套由<b>多轮选择状态机</b>与<b>统计概率抹平算法</b>驱动的轻量级可验证安全架构。
+                    针对物联网与移动终端高度暴露的物理环境，本研究提出 <b>RoundImage</b> 认证方案。系统采用<b>多轮图像选择机制</b>和<b>概率均衡填充算法</b>，构建了一套轻量级的安全认证架构。
                 </p>
             </div>
 
@@ -221,7 +221,7 @@
                         <div class="pillar-name">抗肩窥高安全防御 (Security against Attacks)</div>
                         <div class="pillar-desc">
                             <span class="mapping-tag tag-threat">响应威胁</span> 应对物理旁观、恶意录屏及连续追踪暴露缺陷。<br>
-                            <span class="mapping-tag tag-target">支柱方案</span> 通过连续 3 轮独立刷新矩阵，并引入强制定长点击，在前端输入序列中主动注入混淆噪声，阻断单次观察对凭证空间的复制。
+                            <span class="mapping-tag tag-target">支柱方案</span> 通过连续 3 轮独立刷新矩阵，并引入强制定长点击注入混淆噪声，使单次观察难以获取完整凭证。
                         </div>
                     </div>
                 </div>
@@ -232,7 +232,7 @@
                         <div class="pillar-name">抗频次字典热点消除 (Anti-Hot-spot Database)</div>
                         <div class="pillar-desc">
                             <span class="mapping-tag tag-threat">响应威胁</span> 应对用户心理偏好引发的凭证曝光频次倾斜与字典爆破。<br>
-                            <span class="mapping-tag tag-target">支柱方案</span> 基于比例方程 $\frac{x}{16} = \frac{n}{100}$ 驱动后端装填控制流，强制使密码图与干扰图在登录界面的曝光期望对等，实现统计学行为的热点抹平。
+                            <span class="mapping-tag tag-target">支柱方案</span> 基于比例方程 \(\frac{x}{16} = \frac{n}{100}\) 驱动后端装填控制流，强制使密码图与干扰图在登录界面的曝光期望对等，实现统计学行为的热点抹平。
                         </div>
                     </div>
                 </div>
@@ -243,7 +243,7 @@
                         <div class="pillar-name">低开销弹性可用体验 (High Usability & Tolerance)</div>
                         <div class="pillar-desc">
                             <span class="mapping-tag tag-threat">响应威胁</span> 减轻传统高强度安全机制带来的记忆过载、误触崩盘与高训练成本。<br>
-                            <span class="mapping-tag tag-target">支柱方案</span> 利用大脑对图像自主选择的“再认红利”，并引入单轮匹配率 $\ge 75\%$ 的弹性决策阈值，达成轻量、容错的实际分布式工程落地。
+                            <span class="mapping-tag tag-target">支柱方案</span> 利用大脑对图像自主选择的“再认红利”，并引入单轮匹配率 \(\ge 75\%\) 的弹性决策阈值，达成轻量、容错的实际分布式工程落地。
                         </div>
                     </div>
                 </div>

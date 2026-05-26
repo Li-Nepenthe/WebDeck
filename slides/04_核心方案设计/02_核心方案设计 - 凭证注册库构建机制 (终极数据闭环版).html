@@ -33,7 +33,7 @@
         .punchline { font-size: 1.25rem; font-weight: 700; }
         .text-gray { color: #555555; }
         .text-blue { color: #0052CC; }
-        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; }
+        .description { color: #666666; font-size: 1rem; line-height: 1.5; }
 
         /* 右侧注册控制台组件 */
         .reg-console {
@@ -52,7 +52,7 @@
         .image-tile { aspect-ratio: 1; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; transition: transform 0.2s, border-color 0.2s; user-select: none; }
         .image-tile:hover { transform: scale(1.04); border-color: #CBD5E1; }
         .tile-selected { background-color: rgba(0, 82, 204, 0.02); border-color: #0052CC !important; box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.08); }
-        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; }
+        .console-note { font-size: 0.85rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; }
 
         /* 通关存盘成功的遮罩大面板 */
         .finish-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; border-radius: 14px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: 5; padding: 20px; }
@@ -68,7 +68,7 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.6rem; }
             .punchline { font-size: 1.05rem; }
-            .description { font-size: 0.8rem; }
+            .description { font-size: 0.9rem; }
             .image-tile { font-size: 1.1rem; }
         }
     </style>
@@ -81,15 +81,15 @@
             <div class="left-theory">
                 <div class="theory-node">
                     <div class="punchline text-gray">生命周期分离原则</div>
-                    <div class="description">系统严格遵循“注册态”与“认证态”环境解耦。通过在初始阶段捕获用户的多轮特定认知偏好，生成静态不可逆的散列图谱，作为验证阶段的信任根基。</div>
+                    <div class="description">系统遵循“注册态”与“认证态”环境解耦原则。在注册阶段采集用户的图像选择偏好，生成密码凭证库，作为后续认证的基准。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-blue">5 × 4 空间矩阵装填</div>
-                    <div class="description">注册期间，系统采用 5×4 点阵网格流式呈现 20 张不重复的趣味图像。图像全面覆盖植物、甜点及水果等高辨识度日常实体，全面激活用户的记忆优势。</div>
+                    <div class="description">注册期间，系统每轮采用 5×4 矩阵呈现 20 张候选图像，用户从中选取 5 张。图像涵盖植物、甜点和水果等日常物品类别，利于用户识别和记忆。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-gray">4轮流式分发收网</div>
-                    <div class="description">注册过程需连续重复 4 轮，用户每轮必须点选 5 张图（累计 4×5）。系统最终将这 20 张图像打包封装为“全集凭证库 $n$”，供后续认证阶段动态调用。</div>
+                    <div class="description">注册过程连续进行 4 轮，用户每轮选取 5 张图像（累计 4×5=20 张）。系统将这 20 张图像存储为用户的密码图像集合 $n$，用于后续认证。</div>
                 </div>
             </div>
 
@@ -109,7 +109,7 @@
                 <div class="reg-grid" id="grid-box"></div>
                 
                 <div class="console-note" id="console-tip">
-                    <b>💡 汇报演示引导：</b><br>合法用户依靠对自身所选物品的强再认优势，可通过特定品类纽带在脑海中编织故事链，无需任何死记硬背即可轻松锁死 20 张图像的宏观特征。
+                    用户借助图像识别的记忆优势，通过品类联想自然记忆 20 张密码图像，无需死记硬背。
                 </div>
             </div>
         </div>

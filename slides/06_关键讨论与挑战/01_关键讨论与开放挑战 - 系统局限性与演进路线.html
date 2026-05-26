@@ -35,7 +35,7 @@
         .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
         .text-blue { color: #0052CC; }
         .text-gray { color: #555555; }
-        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; }
+        .description { color: #666666; font-size: 1rem; line-height: 1.5; }
 
         /* 右侧：🍏 苹果风 2x2 开放挑战卡片阵列 */
         .challenge-matrix {
@@ -64,10 +64,10 @@
         .badge-red { background: rgba(219, 56, 58, 0.08); color: #D9383A; }
         
         .card-title { font-size: 1.05rem; font-weight: 700; color: #111111; }
-        .card-desc { font-size: 0.8rem; color: #475569; line-height: 1.45; }
+        .card-desc { font-size: 0.9rem; color: #475569; line-height: 1.45; }
         
         /* 拟物化未来演进路径线 */
-        .roadmap-tag { font-size: 0.75rem; font-weight: 600; color: #0052CC; margin-top: auto; padding-top: 6px; border-top: 1px dashed #E2E8F0; }
+        .roadmap-tag { font-size: 0.85rem; font-weight: 600; color: #0052CC; margin-top: auto; padding-top: 6px; border-top: 1px dashed #E2E8F0; }
 
         /* 严格执行用户指令：不包含任何 page-footer 组件残留 */
 
@@ -77,9 +77,9 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.6rem; }
             .punchline { font-size: 1.05rem; }
-            .description { font-size: 0.8rem; }
+            .description { font-size: 0.9rem; }
             .card-title { font-size: 0.95rem; }
-            .card-desc { font-size: 0.75rem; }
+            .card-desc { font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -95,11 +95,11 @@
             <div class="left-theory">
                 <div class="theory-node">
                     <div class="punchline text-gray">可验证安全系统的边界审视</div>
-                    <div class="description">任何分布式安全机制都不存在绝对的银弹。本方案在利用流式选择斩断物理旁窥和爆破空间的同时，也必然在用户侧和系统层引入了全新的工程制约，需要客观评估其安全边界。</div>
+                    <div class="description">任何安全机制都存在其适用范围和局限性。本方案在增强抗肩窥和抗暴力破解能力的同时，也在用户侧和系统层引入了一些新的约束，需要客观评估其安全边界。</div>
                 </div>
                 <div class="theory-node">
                     <div class="punchline text-blue">学术诚实性与局限性声明</div>
-                    <div class="description">主动暴露系统局限性并给出清晰、严谨的未来演进路线，是确立方案学术完整性的关键。系统后续将针对“时间溢价、长时过载、强侧信道、隐私合规”四大核心软肋执行下一阶段的迭代深挖。</div>
+                    <div class="description">主动讨论系统局限性并给出改进方向，有助于完善方案的学术论证。以下从四个方面讨论系统的局限性和未来改进方向。</div>
                 </div>
             </div>
 
@@ -133,7 +133,7 @@
                         <span class="card-badge badge-red">安全边界拓宽</span>
                     </div>
                     <p class="card-desc">
-                        当前方案能够完美御物理近距离的“盲眼肩窥”，但如果黑客在 IoT 终端侧或环境上部署了高帧率摄像头进行全量视频录制，多轮级联密码库仍有被穷举逆向的风险。
+                        当前方案能有效抵御近距离的肉眼肩窥，但如果攻击者部署高帧率摄像头进行视频录制，多轮认证过程仍存在被分析逆向的风险。
                     </p>
                     <div class="roadmap-tag">🚀 演进: 拓宽至抗视频录像(Video Recording)防御</div>
                 </div>

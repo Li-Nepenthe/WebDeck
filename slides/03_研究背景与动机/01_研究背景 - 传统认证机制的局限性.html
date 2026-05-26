@@ -102,7 +102,7 @@
 
         .description {
             color: #666666;
-            font-size: 0.95rem;
+            font-size: 1rem;
             line-height: 1.6;
             font-weight: 400;
         }
@@ -207,7 +207,7 @@
         }
 
         .counter-label {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             color: #888888;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -228,7 +228,7 @@
         }
 
         .status-badge {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #888888;
             padding: 2px 8px;
@@ -243,7 +243,7 @@
 
         /* 底部论证短语 */
         .panel-summary-text {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #555555;
             line-height: 1.4;
             border-left: 2px solid #0052CC;
@@ -285,7 +285,7 @@
         @media (max-width: 1400px) {
             .page-title { font-size: 1.8rem; }
             .punchline { font-size: 1.15rem; }
-            .description { font-size: 0.85rem; }
+            .description { font-size: 0.9rem; }
             .lock-matrix { width: 160px; height: 160px; gap: 16px; }
             .number-display { font-size: 1.2rem; }
         }
@@ -303,31 +303,31 @@
             <div class="pain-section">
                 <div class="pain-node">
                     <div class="punchline text-gray">记忆负载冲突</div>
-                    <div class="description">受人类大脑长期留存局限，非结构化复杂文本字符串极难被用户精确记忆。</div>
+                    <div class="description">由于人类长期记忆的局限性，复杂文本密码难以被用户准确记忆。</div>
                 </div>
                 <div class="pain-node">
                     <div class="shadow-box"></div>
                     <div class="punchline text-gray">跨平台凭证干扰</div>
-                    <div class="description">多节点环境下，多账户密码间的混淆记忆干扰会导致错误率大幅上升。</div>
+                    <div class="description">多账户场景下，密码间的记忆干扰会导致认证错误率上升。</div>
                 </div>
                 <div class="pain-node">
                     <div class="punchline text-gray">物理侧渠道威胁</div>
-                    <div class="description">输入行为暴露在外部空间，极易受到恶意录屏或充电侧信道监听攻击。</div>
+                    <div class="description">输入行为暴露在物理空间中，容易受到录屏或侧信道攻击。</div>
                 </div>
             </div>
 
             <div class="pain-section">
                 <div class="pain-node">
                     <div class="punchline text-blue">密码空间稀疏</div>
-                    <div class="description">传统 Android 3×3 九宫格解锁方案空间狭小，易遭受离线暴力破解。</div>
+                    <div class="description">Android 3×3 九宫格的密码空间有限，存在被暴力破解的风险。</div>
                 </div>
                 <div class="pain-node">
                     <div class="punchline text-blue">物理留痕暴露</div>
-                    <div class="description">方案对触控屏油脂物理残留（Smudge）防御低下，易被逆向提取轨迹。</div>
+                    <div class="description">触控屏上的油脂残留(Smudge)可被用于逆向分析解锁轨迹。</div>
                 </div>
                 <div class="pain-node">
                     <div class="punchline text-blue">肩窥脆弱性</div>
-                    <div class="description">传统的连续线段画图轨迹极易在物理旁观或环境监控下被捕获并复刻。</div>
+                    <div class="description">连续轨迹模式容易被物理旁观者观察并复现。</div>
                 </div>
             </div>
 
@@ -359,7 +359,7 @@
                 </div>
 
                 <div class="panel-summary-text">
-                    油脂痕迹暴露后，通过重力、反光等环境侧信道逆向推演，理论密码猜测空间将产生非线性暴跌，导致离线暴破效率成倍激增。
+                    油脂痕迹暴露后，通过环境侧信道逆向分析，理论密码猜测空间将显著缩小，离线攻击效率随之提升。
                 </div>
             </div>
 
