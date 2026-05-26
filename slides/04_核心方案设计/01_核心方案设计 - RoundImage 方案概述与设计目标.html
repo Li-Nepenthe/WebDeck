@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心方案设计 - RoundImage 方案概述与设计目标</title>
+    <style>
+        /* 基础重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 16:9 标准 PPT 画布 */
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-width: 1920px;
+            max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6% 8%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 顶部页面主标题 */
+        .page-header {
+            z-index: 2;
+            animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page-title {
+            color: #111111;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 4px;
+            background-color: #0052CC;
+            border-radius: 2px;
+        }
+
+        /* 中部核心非对称栅格 */
+        .grid-content {
+            margin: auto 0;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 60px;
+            z-index: 2;
+            align-items: center;
+        }
+
+        /* 左栏：方案宣告宣言 */
+        .left-proclaim {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .proclaim-tag {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0052CC;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .giant-headline {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #111111;
+            letter-spacing: -1px;
+        }
+        .giant-headline span { color: #0052CC; }
+
+        .sub-statement {
+            font-size: 1.05rem;
+            color: #555555;
+            line-height: 1.6;
+            font-weight: 400;
+            margin-top: 8px;
+        }
+
+        /* 右栏：三大核心设计目标卡片流 */
+        .right-pillars {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .pillar-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .pillar-card:nth-child(1) { animation-delay: 0.15s; }
+        .pillar-card:nth-child(2) { animation-delay: 0.3s; }
+        .pillar-card:nth-child(3) { animation-delay: 0.45s; }
+
+        /* 苹果风格序号标志 */
+        .pillar-badge {
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 82, 204, 0.05);
+            color: #0052CC;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .pillar-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .pillar-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #111111;
+        }
+
+        .pillar-desc {
+            font-size: 0.9rem;
+            color: #666666;
+            line-height: 1.5;
+        }
+
+        /* 映射对照高亮 */
+        .mapping-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .tag-threat { background: rgba(219, 56, 58, 0.06); color: #D9383A; }
+        .tag-target { background: rgba(16, 185, 129, 0.06); color: #10B981; }
+
+
+        /* 动画逻辑 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.8rem; }
+            .giant-headline { font-size: 2.2rem; }
+            .sub-statement { font-size: 0.85rem; }
+            .pillar-name { font-size: 1.05rem; }
+            .pillar-desc { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">RoundImage 方案概述</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-proclaim">
+                <div class="proclaim-tag">Proposed Solution</div>
+                <h1 class="giant-headline">解耦冲突的<br><span>流式图像</span>验证</h1>
+                <p class="sub-statement">
+                    针对物联网与移动终端高度暴露的物理环境，本研究正式提出 <b>RoundImage</b> 认证方案。系统摒弃了传统的单次死板凭证匹配，转而构建了一套由<b>多轮选择状态机</b>与<b>统计概率抹平算法</b>驱动的轻量级可验证安全架构。
+                </p>
+            </div>
+
+            <div class="right-pillars">
+                <div class="pillar-card">
+                    <div class="pillar-badge">01</div>
+                    <div class="pillar-info">
+                        <div class="pillar-name">抗肩窥高安全防御 (Security against Attacks)</div>
+                        <div class="pillar-desc">
+                            <span class="mapping-tag tag-threat">响应威胁</span> 应对物理旁观、恶意录屏及连续追踪暴露缺陷。<br>
+                            <span class="mapping-tag tag-target">支柱方案</span> 通过连续 3 轮独立刷新矩阵，并引入强制定长点击，在前端输入序列中主动注入混淆噪声，阻断单次观察对凭证空间的复制。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-badge">02</div>
+                    <div class="pillar-info">
+                        <div class="pillar-name">抗频次字典热点消除 (Anti-Hot-spot Database)</div>
+                        <div class="pillar-desc">
+                            <span class="mapping-tag tag-threat">响应威胁</span> 应对用户心理偏好引发的凭证曝光频次倾斜与字典爆破。<br>
+                            <span class="mapping-tag tag-target">支柱方案</span> 基于比例方程 $\frac{x}{16} = \frac{n}{100}$ 驱动后端装填控制流，强制使密码图与干扰图在登录界面的曝光期望对等，实现统计学行为的热点抹平。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-badge">03</div>
+                    <div class="pillar-info">
+                        <div class="pillar-name">低开销弹性可用体验 (High Usability & Tolerance)</div>
+                        <div class="pillar-desc">
+                            <span class="mapping-tag tag-threat">响应威胁</span> 减轻传统高强度安全机制带来的记忆过载、误触崩盘与高训练成本。<br>
+                            <span class="mapping-tag tag-target">支柱方案</span> 利用大脑对图像自主选择的“再认红利”，并引入单轮匹配率 $\ge 75\%$ 的弹性决策阈值，达成轻量、容错的实际分布式工程落地。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

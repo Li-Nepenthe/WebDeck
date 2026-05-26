@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心方案设计 - 凭证注册库构建机制 (终极数据闭环版)</title>
+    <style>
+        /* 基础重置与 16:9 标准 PPT 画布锁定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw; height: 56.25vw; max-width: 1920px; max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 5% 7%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 顶部主标题 */
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
+        .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
+        
+        /* 中部非对称设计主网格 */
+        .grid-content { margin: auto 0; display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; z-index: 2; align-items: center; }
+        .left-theory { display: flex; flex-direction: column; gap: 24px; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .theory-node { display: flex; flex-direction: column; gap: 4px; }
+        .punchline { font-size: 1.25rem; font-weight: 700; }
+        .text-gray { color: #555555; }
+        .text-blue { color: #0052CC; }
+        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; }
+
+        /* 右侧注册控制台组件 */
+        .reg-console {
+            background: rgba(244, 246, 249, 0.7); border: 1px solid rgba(0, 0, 0, 0.02);
+            border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px;
+            position: relative; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.005);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+        .console-header { display: flex; justify-content: space-between; align-items: center; }
+        .console-title { font-size: 0.95rem; font-weight: 700; color: #111111; }
+        .reg-badge { font-size: 0.75rem; font-weight: 600; color: #0052CC; background: rgba(0, 82, 204, 0.06); padding: 3px 8px; border-radius: 4px; transition: all 0.3s; }
+        .badge-success { color: #FFFFFF; background: #10B981; }
+
+        /* 论文规范 5x4 紧凑矩阵布局 */
+        .reg-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #FFFFFF; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01); transition: opacity 0.3s, transform 0.3s; }
+        .image-tile { aspect-ratio: 1; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; transition: transform 0.2s, border-color 0.2s; user-select: none; }
+        .image-tile:hover { transform: scale(1.04); border-color: #CBD5E1; }
+        .tile-selected { background-color: rgba(0, 82, 204, 0.02); border-color: #0052CC !important; box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.08); }
+        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; }
+
+        /* 通关存盘成功的遮罩大面板 */
+        .finish-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; border-radius: 14px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; z-index: 5; padding: 20px; }
+        .finish-active { opacity: 1; pointer-events: auto; }
+        .success-icon { width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10B981; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.5rem; }
+        
+        .apple-btn { background: #64748B; color: #FFFFFF; border: none; padding: 6px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+        .apple-btn:hover { background: #475569; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.6rem; }
+            .punchline { font-size: 1.05rem; }
+            .description { font-size: 0.8rem; }
+            .image-tile { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="page-header"><h2 class="page-title">凭证注册库构建与空间初始化</h2></div>
+        
+        <div class="grid-content">
+            <div class="left-theory">
+                <div class="theory-node">
+                    <div class="punchline text-gray">生命周期分离原则</div>
+                    <div class="description">系统严格遵循“注册态”与“认证态”环境解耦。通过在初始阶段捕获用户的多轮特定认知偏好，生成静态不可逆的散列图谱，作为验证阶段的信任根基。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-blue">5 × 4 空间矩阵装填</div>
+                    <div class="description">注册期间，系统采用 5×4 点阵网格流式呈现 20 张不重复的趣味图像。图像全面覆盖植物、甜点及水果等高辨识度日常实体，全面激活用户的记忆优势。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-gray">4轮流式分发收网</div>
+                    <div class="description">注册过程需连续重复 4 轮，用户每轮必须点选 5 张图（累计 4×5）。系统最终将这 20 张图像打包封装为“全集凭证库 $n$”，供后续认证阶段动态调用。</div>
+                </div>
+            </div>
+
+            <div class="reg-console">
+                <div class="finish-panel" id="final-card">
+                    <div class="success-icon">✓</div>
+                    <h4 style="font-weight: 700; color: #111111;">凭证库已持久化写入虚拟盘库</h4>
+                    <p id="storage-debug-info" style="font-size: 0.82rem; color: #555555; text-align: center; line-height: 1.5; padding: 0 10px;"></p>
+                    <button class="apple-btn" id="panel-retry-btn">清空缓存并重新注册</button>
+                </div>
+
+                <div class="console-header">
+                    <span class="console-title" id="round-title">Round 1 / 4：请预选 5 张图片作为密码</span>
+                    <span class="reg-badge" id="reg-counter">已选择: 0 / 5</span>
+                </div>
+                
+                <div class="reg-grid" id="grid-box"></div>
+                
+                <div class="console-note" id="console-tip">
+                    <b>💡 汇报演示引导：</b><br>合法用户依靠对自身所选物品的强再认优势，可通过特定品类纽带在脑海中编织故事链，无需任何死记硬背即可轻松锁死 20 张图像的宏观特征。
+                </div>
+            </div>
+        </div>
+        </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentRound = 1;
+            let selectedCount = 0;
+            let currentRoundSelected = [];
+            let allSelectedSecrets = []; 
+
+            // 4 轮流式注册纯视觉单字符 Emoji 矩阵池（杜绝带任何文本描述的脏特征）
+            const roundPools = {
+                1: ['🍓', '🐻', '🥑', '🍩', '🌿', '🐱', '🍇', '🦊', '🍰', '🌻', '🦁', '🍍', '🦖', '🍦', '🍄', '🦉', '🍉', '🐼', '🍒', '🌵'],
+                2: ['🍏', '🦁', '🦊', '🐰', '🐯', '🐨', '🐷', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄'],
+                3: ['🥞', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🍳', '🥘', '🍲', '🍿', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢'],
+                4: ['🌴', '🌵', '🌾', '🌿', '🍀', '🍁', '🍂', '🍃', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝']
+            };
+
+            const gridBox = document.getElementById('grid-box');
+            const roundTitle = document.getElementById('round-title');
+            const regCounter = document.getElementById('reg-counter');
+            const finalCard = document.getElementById('final-card');
+            const debugInfo = document.getElementById('storage-debug-info');
+            const retryBtn = document.getElementById('panel-retry-btn');
+
+            // 统一的 Emoji 清洗路由，剔除任何潜在的多余编码空格
+            function cleanEmoji(str) {
+                const match = str.match(/[\u{1F300}-\u{1F9FF}]/u);
+                return match ? match[0] : str.trim();
+            }
+
+            function setupGridEvents() {
+                const tiles = document.querySelectorAll('.image-tile');
+                tiles.forEach(tile => {
+                    tile.onclick = () => {
+                        const emoji = cleanEmoji(tile.innerText);
+
+                        if (tile.classList.contains('tile-selected')) {
+                            tile.classList.remove('tile-selected');
+                            selectedCount--;
+                            currentRoundSelected = currentRoundSelected.filter(item => item !== emoji);
+                        } else {
+                            if (selectedCount >= 5) return; // 严格限制单轮只能点击 5 个
+                            tile.classList.add('tile-selected');
+                            selectedCount++;
+                            currentRoundSelected.push(emoji);
+                        }
+
+                        if (selectedCount === 5) {
+                            regCounter.innerText = `Round ${currentRound} 成功`;
+                            regCounter.className = "reg-badge badge-success";
+                            
+                            allSelectedSecrets = allSelectedSecrets.concat(currentRoundSelected);
+                            currentRoundSelected = [];
+
+                            setTimeout(() => {
+                                if (currentRound < 4) {
+                                    currentRound++;
+                                    selectedCount = 0;
+                                    gridBox.style.opacity = '0';
+                                    gridBox.style.transform = 'scale(0.98)';
+                                    
+                                    setTimeout(() => {
+                                        roundTitle.innerText = `Round ${currentRound} / 4：请预选 5 张图片作为密码`;
+                                        regCounter.innerText = `已选择: 0 / 5`;
+                                        regCounter.className = "reg-badge";
+                                        gridBox.innerHTML = roundPools[currentRound].map(e => `<div class="image-tile">${e}</div>`).join('');
+                                        setupGridEvents();
+                                        gridBox.style.opacity = '1';
+                                        gridBox.style.transform = 'scale(1)';
+                                    }, 200);
+                                } else {
+                                    // 🍏 数据流持久化打通：真正存入 localStorage 虚拟盘库
+                                    localStorage.setItem('roundimage_secret_pool', JSON.stringify(allSelectedSecrets));
+                                    debugInfo.innerHTML = `系统已捕获您现场点选的 20 张图像凭证全集：<br><b style="color:#0052CC; font-size:1.15rem; letter-spacing:3px;">${allSelectedSecrets.join(' ')}</b><br>底层虚拟盘库已同步。切换到下一页登录演示时，系统将基于此全新数据集高亮生成綠色验证矩阵。`;
+                                    finalCard.classList.add('finish-active');
+                                }
+                            }, 800);
+                        } else {
+                            regCounter.innerText = `已选择: ${selectedCount} / 5`;
+                            regCounter.className = "reg-badge";
+                        }
+                    };
+                });
+            }
+
+            // 🍏 核心修改：重新注册按钮的回调，真正清空物理缓存，防脏数据污染
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    localStorage.removeItem('roundimage_secret_pool'); 
+                    window.location.reload(); 
+                };
+            }
+
+            // 首次数据清洗入场渲染
+            gridBox.innerHTML = roundPools[1].map(e => `<div class="image-tile">${e}</div>`).join('');
+            setupGridEvents();
+        });
+    </script>
+</body>
+</html>

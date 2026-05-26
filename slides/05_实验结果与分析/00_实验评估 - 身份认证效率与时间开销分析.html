@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实验评估 - 用户研究基准测试分析</title>
+    <style>
+        /* 基础重置与 16:9 标准 PPT 画布物理锁定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw; height: 56.25vw; max-width: 1920px; max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 5% 7%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 顶部页面标题 */
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
+        .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
+
+        /* 中部非对称数据栅格布局 */
+        .grid-content { margin: auto 0; display: grid; grid-template-columns: 1fr 1.35fr; gap: 40px; z-index: 2; align-items: center; }
+
+        /* 左侧学术论述 */
+        .left-theory { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .theory-node { display: flex; flex-direction: column; gap: 4px; }
+        .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
+        .text-blue { color: #0052CC; }
+        .text-gray { color: #555555; }
+        .description { color: #666666; font-size: 0.9rem; line-height: 1.45; }
+
+        /* 右侧：🍏 苹果大厂风原生学术表格大屏 */
+        .table-console {
+            display: flex; flex-direction: column; gap: 16px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .academic-section {
+            background: #FFFFFF; border-radius: 12px; padding: 16px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.02); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+        }
+        .table-caption { font-size: 0.82rem; font-weight: 700; color: #111111; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .table-caption span { color: #0052CC; font-size: 0.75rem; font-weight: 500; }
+
+        /* 严格的三线表学术样式重构 */
+        .academic-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem; }
+        .academic-table th { font-weight: 700; color: #111111; padding: 8px 4px; border-top: 2px solid #111111; border-bottom: 1px solid #111111; }
+        .academic-table td { padding: 8px 4px; color: #475569; border-bottom: 1px solid #E2E8F0; }
+        .academic-table tr:last-child td { border-bottom: 2px solid #111111; } /* 三线表底线 */
+        
+        /* 高亮行或特征值 */
+        .highlight-val { font-weight: 700; color: #0052CC; }
+
+        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; margin-top: 4px; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.6rem; }
+            .punchline { font-size: 1.05rem; }
+            .description { font-size: 0.8rem; }
+            .academic-table { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">实验评估 - 认知轮次基准可用性测试</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-theory">
+                <div class="theory-node">
+                    <div class="punchline text-gray">两轮与三轮模式性能解耦</div>
+                    <div class="description">用户研究 1 重点考察了选择轮次变动对系统可用性边界的挤压。实验将 60 名参与者均分为 Group-1（2轮组）与 Group-2（3轮组），采集共 900 次交互记录，量化机制载荷。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-blue">高水准操作成功率收敛</div>
+                    <div class="description">数据表明，两组在确认与登录阶段均跑出了 92% 以上的高成功率。即使面临三轮复杂矩阵，用户的身份认证成功率依然稳定维持在 92.7%，充分论证了图形再认架构的高可用性。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-gray">可用性与时间开销的权衡</div>
+                    <div class="description">伴随轮次增加，Group-2 的平均登录耗时由 16.3s 上升至 20.4s，长期记忆留存率出现微弱波动（由 91.0% 滑落至 89.3%）。这提示我们在工程落地时需根据安全域场景弹性配置轮次。</div>
+                </div>
+            </div>
+
+            <div class="table-console">
+                
+                <div class="academic-section">
+                    <div class="table-caption">
+                        <span>TABLE III &nbsp; 各阶段用户认证成功率对比分析</span>
+                        <span>样本容量 $N_1 = N_2 = 300\,\text{Trials}$</span>
+                    </div>
+                    <table class="academic-table">
+                        <thead>
+                            <tr>
+                                <th>测试阶段 (Phase)</th>
+                                <th>Group-1 (两轮方案)</th>
+                                <th>Group-2 (三轮方案)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>凭证确认 (Confirmation)</td>
+                                <td>285/300 (95.0%)</td>
+                                <td>276/300 (92.0%)</td>
+                            </tr>
+                            <tr>
+                                <td>身份登录 (Login)</td>
+                                <td>281/300 (93.7%)</td>
+                                <td>278/300 (92.7%)</td>
+                            </tr>
+                            <tr>
+                                <td>记忆留存 (3天后 Retention)</td>
+                                <td class="highlight-val">273/300 (91.0%)</td>
+                                <td class="highlight-val">268/300 (89.3%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="academic-section">
+                    <div class="table-caption">
+                        <span>TABLE IV &nbsp; 登录阶段时间开销与离散标准差</span>
+                    </div>
+                    <table class="academic-table">
+                        <thead>
+                            <tr>
+                                <th>度量指标 (Metric)</th>
+                                <th>Group-1 (两轮方案)</th>
+                                <th>Group-2 (三轮方案)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>平均登录耗时 (Time Consumption, s)</td>
+                                <td class="highlight-val">16.3</td>
+                                <td class="highlight-val">20.4</td>
+                            </tr>
+                            <tr>
+                                <td>标准差 (Standard Deviation, s)</td>
+                                <td>3.8</td>
+                                <td>4.2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="console-note">
+                    <b>🍏 答辩演示导引：</b><br>
+                    评委请看右侧 Table III 和 Table IV，尽管三轮模式在时间上增加了 4.1s，但两组的登录成功率和记忆留存率无显著统计学差异（$\rho > 0.05$），表明三轮方案在保障可用性的同时，成功通过增加轮次压缩了攻击空间。
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>总结与展望 - 理论贡献与未来演进路线</title>
+    <style>
+        /* 基础重置与 16:9 标准 PPT 画布物理锁定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw; height: 56.25vw; max-width: 1920px; max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 5% 7%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 顶部页面标题 */
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
+        .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
+
+        /* 中部非对称栅格布局 */
+        .grid-content { margin: auto 0; display: grid; grid-template-columns: 1fr 1.1fr; gap: 50px; z-index: 2; align-items: stretch; }
+
+        /* 左栏：核心贡献流 */
+        .left-contributions { display: flex; flex-direction: column; gap: 16px; animation: fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .section-headline { font-size: 1.35rem; font-weight: 800; color: #111111; letter-spacing: -0.3px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .headline-dot { width: 6px; height: 18px; background: #0052CC; border-radius: 3px; }
+        
+        .contribution-node {
+            background: rgba(244, 246, 249, 0.6); border: 1px solid rgba(0,0,0,0.02);
+            border-radius: 10px; padding: 14px 18px; display: flex; flex-direction: column; gap: 4px;
+        }
+        .node-title { font-size: 1.05rem; font-weight: 700; color: #0052CC; }
+        .node-desc { font-size: 0.85rem; color: #555555; line-height: 1.45; }
+
+        /* 右栏：未来展望流 */
+        .right-future { display: flex; flex-direction: column; gap: 16px; animation: fadeInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+        .headline-dot-green { background: #10B981; }
+        
+        .future-node {
+            background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0,0,0,0.03);
+            border-radius: 10px; padding: 14px 18px; display: flex; flex-direction: column; gap: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+        }
+        .future-node-title { font-size: 1.05rem; font-weight: 700; color: #10B981; }
+
+        /* 强化的终局谢幕致谢层 */
+        .thanks-box {
+            grid-column: span 2; background: linear-gradient(90deg, rgba(0,82,204,0.04) 0%, rgba(16,185,129,0.04) 100%);
+            border-radius: 10px; padding: 14px; text-align: center; margin-top: 10px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+        .thanks-text { font-size: 1.4rem; font-weight: 800; color: #111111; letter-spacing: 2px; }
+
+        /* 严格隐藏任何页脚组件 */
+
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.6rem; }
+            .section-headline { font-size: 1.15rem; }
+            .node-title, .future-node-title { font-size: 0.95rem; }
+            .node-desc { font-size: 0.78rem; }
+            .thanks-text { font-size: 1.15rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">总结与展望 - 成果提炼与演进路线</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-contributions">
+                <div class="section-headline">
+                    <div class="headline-dot"></div>
+                    <span>研究工作总结 (Conclusions)</span>
+                </div>
+                <div class="contribution-node">
+                    <h4 class="node-title">提出 RoundImage 级联选择认证机制</h4>
+                    <p class="node-desc">基于人类视觉再认红利，设计了由“多轮洗牌状态机”驱动的流式图形验证架构 。成功将传统图形密码中死记硬背的机械匹配升级为动态、高容错的轻量级工程落地 。</p>
+                </div>
+                <div class="contribution-node">
+                    <h4 class="node-title">确立等比例消除热点数学底座</h4>
+                    <p class="node-desc">推导并构建了严格服从无放回抽样超几何分布的约束方程 $\frac{x}{16} = \frac{n}{100}$ 。在统计学行为上成功将任意图像的对外曝光期望强行平摊抹平至恒定的 $1.25\%$ ，从根本上铲除了热点字典爆破的侧信道温床 。</p>
+                </div>
+                <div class="contribution-node">
+                    <h4 class="node-title">多终端全生态真机评测验证</h4>
+                    <p class="node-desc">针对 PC 端与智能手机等移动 IoT 终端部署了全量原型评测，覆盖 100 名真实测试样本 。实验数据证实系统在维系高水平可用性的同时 ，成功将物理近距离肩窥攻击的破解率压制在 $15\% \sim 25\%$ 的绝对安全区间 。</p>
+                </div>
+            </div>
+
+            <div class="right-future">
+                <div class="section-headline">
+                    <div class="headline-dot headline-dot-green"></div>
+                    <span>未来工作展望 (Future Work)</span>
+                </div>
+                <div class="future-node">
+                    <h4 class="future-node-title">引入高阶动态侧信道防御算法</h4>
+                    <p class="node-desc">针对极端的恶意全量视频录像等强侧信道探测风险 ，后续计划在前端点击流中动态引入异步模糊乱序噪声，进一步拓宽系统在极度暴露物理环境下的防逆向安全边界 。</p>
+                </div>
+                <div class="future-node">
+                    <h4 class="future-node-title">多模态生物特征行为演进升级</h4>
+                    <p class="node-desc">计划将纯粹的图形认知再认与智能终端的底层触控压力、滑动速率等隐式触控生物特征（Touch Biometrics）执行深度级联整合 ，构建具备自适应行为审计的分布式多模态可验证安全架构 。</p>
+                </div>
+                <div class="future-node">
+                    <h4 class="future-node-title">去中心化合规存储与隐私加固</h4>
+                    <p class="node-desc">围绕物联网边缘节点的分布式存储软肋 ，深度适配 GDPR 刚性数据隐私合规要求 ，引入轻量级图像混淆散列算法与边缘去中心化认证协议，全方位保障信任根凭证的宿主机物理安全 。</p>
+                </div>
+            </div>
+
+            <div class="thanks-box">
+                <h3 class="thanks-text">敬请各位专家学者批评指正</h3>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

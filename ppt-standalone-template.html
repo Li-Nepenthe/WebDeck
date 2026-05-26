@@ -6,7 +6,8 @@
     <title>WebDeck Presentation</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <script>window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] }, svg: { fontCache: 'global' }, options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] } };</script>
+    <script>__MATHJAX_INLINE_CODE__</script>
 </head>
 <body>
     <nav id="top-nav" style="opacity:0; pointer-events:none; transition: opacity 0.5s ease, transform 0.5s ease;">
@@ -72,6 +73,17 @@
 
         let globalSheet = null;
         let fallbackCss = null;
+
+        function getSlideIndexFromHash() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#slide-')) {
+                const idx = parseInt(hash.replace('#slide-', ''), 10);
+                if (!isNaN(idx) && idx >= 0 && idx < slidesData.length) {
+                    return idx;
+                }
+            }
+            return 0;
+        }
         const IFRAME_RENDER_HINT_REGEX = /<!DOCTYPE\s+html|<html[\s>]|<head[\s>]|<body[\s>]|<script[\s>]|<link[\s>]|<meta[\s>]|<base[\s>]|<title[\s>]/i;
         const INLINE_HANDLER_HINT_REGEX = /\son[a-z][\w:-]*\s*=/i;
         const JAVASCRIPT_URL_HINT_REGEX = /\b(?:href|src|xlink:href)\s*=\s*["']?\s*javascript:/i;
@@ -225,6 +237,14 @@
             overrideStyle.textContent = overrideCssText;
             head.appendChild(overrideStyle);
 
+            // Inject MathJax for formula rendering inside iframes (offline, from parent)
+            const mjConfig = doc.createElement('script');
+            mjConfig.textContent = 'window.MathJax = { tex: { inlineMath: [["$","$"],["\\\\(","\\\\)"]], displayMath: [["$$","$$"],["\\\\[","\\\\]"]] }, svg: { fontCache: "global" }, options: { skipHtmlTags: ["script","noscript","style","textarea","pre"] } };';
+            head.appendChild(mjConfig);
+            const mjLoader = doc.createElement('script');
+            mjLoader.textContent = 'try { eval(parent.__MATHJAX_CODE__); } catch(e) { var s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"; document.head.appendChild(s); }';
+            head.appendChild(mjLoader);
+
             return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
         }
 
@@ -233,6 +253,8 @@
                 document.body.innerHTML = '<h1 style="color:red;padding:20px;">No slides were exported.</h1>';
                 return;
             }
+            
+            current = getSlideIndexFromHash();
             
             globalSheet = new CSSStyleSheet();
             fallbackCss = null;
@@ -246,6 +268,7 @@
             
             render();
             bindGlobalEvents();
+            setupNavDropdown();
         }
 
         function render() {
@@ -290,7 +313,19 @@
                                 }));
                             });
                         });
+                        // Forward wheel events only when iframe content is at scroll edge
                         iframeWin.addEventListener('wheel', e => {
+                            try {
+                                const doc = iframeWin.document.documentElement;
+                                const body = iframeWin.document.body;
+                                const scrollTop = Math.max(doc.scrollTop, body.scrollTop);
+                                const scrollHeight = Math.max(doc.scrollHeight, body.scrollHeight);
+                                const clientHeight = doc.clientHeight;
+                                const atTop = scrollTop <= 1;
+                                const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+                                if (e.deltaY > 0 && !atBottom) return;
+                                if (e.deltaY < 0 && !atTop) return;
+                            } catch(err) {}
                             document.dispatchEvent(new WheelEvent('wheel', { deltaY: e.deltaY, bubbles: true }));
                         }, { passive: true });
                     } catch(e) {}
@@ -515,10 +550,35 @@
             if (window.MathJax?.typesetPromise) {
                 window.MathJax.typesetPromise();
             }
+
+            // Update URL hash to persist current slide on refresh/bookmark
+            window.location.hash = 'slide-' + current;
+
+            // Update active state in nav dropdown if open
+            const activeCard = document.querySelector(`.micro-slide-card[data-slide-idx="${current}"]`);
+            if (activeCard) {
+                document.querySelectorAll('.micro-slide-card').forEach(c => c.classList.remove('active'));
+                activeCard.classList.add('active');
+            }
+        }
+
+        // --- Rapid navigation: skip transition when pressing keys fast ---
+        let navTimer = null;
+        function skipTransitionIfRapid() {
+            const slides = document.querySelectorAll('.slide');
+            if (navTimer) {
+                clearTimeout(navTimer);
+                slides.forEach(s => s.style.transition = 'none');
+            }
+            navTimer = setTimeout(() => {
+                slides.forEach(s => s.style.transition = '');
+                navTimer = null;
+            }, 400);
         }
 
         function nextSlide() {
             if (current < slidesData.length - 1) {
+                skipTransitionIfRapid();
                 current += 1;
                 update();
             }
@@ -526,6 +586,7 @@
 
         function prevSlide() {
             if (current > 0) {
+                skipTransitionIfRapid();
                 current -= 1;
                 update();
             }
@@ -672,7 +733,175 @@
             navOverlay.appendChild(createNavZone('right'));
             document.body.appendChild(navOverlay);
 
+            // Listen to browser navigation / hash change
+            window.addEventListener('hashchange', () => {
+                const idx = getSlideIndexFromHash();
+                if (idx !== current) {
+                    current = idx;
+                    update();
+                }
+            });
+
             fadeLaser();
+        }
+
+        // --- Navigation Hover Dropdown Logic ---
+        let hoverTriggerTimer = null;
+        let hoverCloseTimer = null;
+        let isDropdownOpen = false;
+        let activeDropdownChapter = null;
+
+        function setupNavDropdown() {
+            const topNav = document.getElementById('top-nav');
+            if (!topNav) return;
+            
+            // Create dropdown panel if it doesn't exist
+            let dropdownPanel = document.getElementById('nav-dropdown');
+            if (!dropdownPanel) {
+                dropdownPanel = document.createElement('div');
+                dropdownPanel.id = 'nav-dropdown';
+                dropdownPanel.className = 'nav-dropdown-panel';
+                topNav.appendChild(dropdownPanel);
+            }
+            
+            // Bind mouse events to dropdown panel to keep it open
+            dropdownPanel.onmouseenter = () => {
+                if (hoverCloseTimer) {
+                    clearTimeout(hoverCloseTimer);
+                    hoverCloseTimer = null;
+                }
+            };
+            
+            dropdownPanel.onmouseleave = () => {
+                startCloseTimer();
+            };
+            
+            // Bind mouse events to nav items
+            const bindNavHoverEvents = () => {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.dataset.empty === '1') return; // Skip empty chapters
+                    
+                    item.onmouseenter = () => {
+                        const prefix = item.dataset.prefix;
+                        if (hoverCloseTimer) {
+                            clearTimeout(hoverCloseTimer);
+                            hoverCloseTimer = null;
+                        }
+                        
+                        if (isDropdownOpen) {
+                            // Switch immediately if already open
+                            if (activeDropdownChapter !== prefix) {
+                                showDropdownForChapter(prefix);
+                            }
+                        } else {
+                            // Trigger with delay if opening from closed state
+                            if (hoverTriggerTimer) clearTimeout(hoverTriggerTimer);
+                            hoverTriggerTimer = setTimeout(() => {
+                                showDropdownForChapter(prefix);
+                            }, 450);
+                        }
+                    };
+                    
+                    item.onmouseleave = () => {
+                        if (hoverTriggerTimer) {
+                            clearTimeout(hoverTriggerTimer);
+                            hoverTriggerTimer = null;
+                        }
+                        startCloseTimer();
+                    };
+                });
+            };
+            
+            bindNavHoverEvents();
+        }
+
+        function startCloseTimer() {
+            if (hoverCloseTimer) clearTimeout(hoverCloseTimer);
+            hoverCloseTimer = setTimeout(() => {
+                hideDropdown();
+            }, 300);
+        }
+
+        function hideDropdown() {
+            const dropdownPanel = document.getElementById('nav-dropdown');
+            if (dropdownPanel) {
+                dropdownPanel.classList.remove('show');
+            }
+            isDropdownOpen = false;
+            activeDropdownChapter = null;
+        }
+
+        function showDropdownForChapter(prefix) {
+            const dropdownPanel = document.getElementById('nav-dropdown');
+            if (!dropdownPanel) return;
+            
+            // Filter slides belonging to this chapter
+            const chapterSlides = slidesData.filter(slide => slide.chapterPrefix === prefix);
+            if (chapterSlides.length === 0) {
+                hideDropdown();
+                return;
+            }
+            
+            activeDropdownChapter = prefix;
+            isDropdownOpen = true;
+            
+            // Build dropdown inner HTML
+            const cardsHtml = chapterSlides.map(slide => {
+                const globalIndex = slidesData.indexOf(slide);
+                const isActive = (globalIndex === current) ? ' active' : '';
+                const title = slide.title || '幻灯片';
+                const displayIndex = globalIndex + 1;
+                
+                return `
+                    <div class="micro-slide-card${isActive}" data-slide-idx="${globalIndex}" title="点击跳转至：${title}">
+                        <div class="micro-preview-container">
+                            <iframe class="micro-preview-iframe" data-src-idx="${globalIndex}"></iframe>
+                            <div class="micro-preview-blocker"></div>
+                        </div>
+                        <div class="micro-card-info">
+                            <span class="micro-card-title">${title}</span>
+                            <span class="micro-card-number">${displayIndex < 10 ? '0' + displayIndex : displayIndex}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            dropdownPanel.innerHTML = `<div class="nav-dropdown-cards">${cardsHtml}</div>`;
+            
+            // Add click listeners to cards
+            dropdownPanel.querySelectorAll('.micro-slide-card').forEach(card => {
+                card.onclick = () => {
+                    const idx = parseInt(card.dataset.slideIdx, 10);
+                    current = idx;
+                    update();
+                    hideDropdown();
+                };
+            });
+            
+            // Show panel
+            dropdownPanel.classList.add('show');
+            
+            // Lazy load micro iframes
+            setTimeout(() => {
+                dropdownPanel.querySelectorAll('.micro-preview-iframe').forEach(iframe => {
+                    const idx = parseInt(iframe.dataset.srcIdx, 10);
+                    const slide = slidesData[idx];
+                    if (slide) {
+                        const rawHtml = slide.rawHtml || slide.html || '';
+                        
+                        iframe.srcdoc = buildIframeSrcdoc(rawHtml, {
+                            baseHref: createSlideBaseUrl(slide.chapterPrefix).toString(),
+                            overrideCssText: `
+                                html, body { width: 100% !important; height: auto !important; min-height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background-color: transparent !important; }
+                                body { display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+                                .slide-container { width: 100% !important; height: auto !important; min-height: 100vh !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; padding: 40px 60px !important; transform: none !important; }
+                                canvas, iframe, video, img { display: block !important; }
+                                * { box-sizing: border-box !important; }
+                            `
+                        });
+                    }
+                });
+            }, 50);
         }
 
         function fadeLaser() {

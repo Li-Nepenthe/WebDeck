@@ -93,7 +93,7 @@ function readSlidesManifest(slidesDir, options = {}) {
     if (!fs.existsSync(slidesDir)) return [];
 
     return fs.readdirSync(slidesDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
+        .filter(dirent => dirent.isDirectory() && /^\d/.test(dirent.name))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(dirent => {
             const folderPath = path.join(slidesDir, dirent.name);
@@ -431,7 +431,27 @@ export default defineConfig({
 
                                 const template = fs.readFileSync(path.resolve(rootDir, 'ppt-standalone-template.html'), 'utf-8');
                                 const presentationData = buildPresentationData(slidesDir);
-                                const html = template.replace('__PRESENTATION_DATA__', serializeForInlineScript(presentationData));
+
+                                // Download MathJax for offline embedding
+                                let mathjaxCode = '';
+                                try {
+                                    const mjUrl = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js';
+                                    const mjResponse = await fetch(mjUrl);
+                                    if (mjResponse.ok) {
+                                        mathjaxCode = await mjResponse.text();
+                                        console.log(`[export] MathJax downloaded: ${(mathjaxCode.length / 1024).toFixed(0)}KB`);
+                                    }
+                                } catch (e) {
+                                    console.warn('[export] Failed to download MathJax, formulas will need internet:', e.message);
+                                }
+                                // Store as global for iframe access + inline execution
+                                const mathjaxInline = mathjaxCode
+                                    ? `window.__MATHJAX_CODE__ = ${JSON.stringify(mathjaxCode)};\n${mathjaxCode}`
+                                    : `var s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js";document.head.appendChild(s);`;
+
+                                const html = template
+                                    .replace('__PRESENTATION_DATA__', serializeForInlineScript(presentationData))
+                                    .replace('__MATHJAX_INLINE_CODE__', mathjaxInline);
 
                                 fs.writeFileSync(path.join(projectPath, 'index.html'), html, 'utf-8');
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关键讨论与开放挑战 - 系统局限性与演进路线</title>
+    <style>
+        /* 基础重置与 16:9 标准 PPT 画布物理锁定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw; height: 56.25vw; max-width: 1920px; max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 5% 7%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 顶部页面标题 */
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
+        .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
+
+        /* 中部非对称栅格布局 */
+        .grid-content { margin: auto 0; display: grid; grid-template-columns: 1fr 1.35fr; gap: 45px; z-index: 2; align-items: center; }
+
+        /* 左侧学术立论 */
+        .left-theory { display: flex; flex-direction: column; gap: 20px; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .theory-node { display: flex; flex-direction: column; gap: 4px; }
+        .punchline { font-size: 1.25rem; font-weight: 700; color: #111111; }
+        .text-blue { color: #0052CC; }
+        .text-gray { color: #555555; }
+        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; }
+
+        /* 右侧：🍏 苹果风 2x2 开放挑战卡片阵列 */
+        .challenge-matrix {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            border-radius: 12px; padding: 18px;
+            display: flex; flex-direction: column; gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .challenge-card:hover {
+            transform: translateY(-2px);
+            background: #FFFFFF;
+            border-color: rgba(0, 82, 204, 0.1);
+        }
+
+        /* 挑战专属微标志 */
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .card-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .badge-amber { background: rgba(245, 158, 11, 0.08); color: #D97706; }
+        .badge-red { background: rgba(219, 56, 58, 0.08); color: #D9383A; }
+        
+        .card-title { font-size: 1.05rem; font-weight: 700; color: #111111; }
+        .card-desc { font-size: 0.8rem; color: #475569; line-height: 1.45; }
+        
+        /* 拟物化未来演进路径线 */
+        .roadmap-tag { font-size: 0.75rem; font-weight: 600; color: #0052CC; margin-top: auto; padding-top: 6px; border-top: 1px dashed #E2E8F0; }
+
+        /* 严格执行用户指令：不包含任何 page-footer 组件残留 */
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.6rem; }
+            .punchline { font-size: 1.05rem; }
+            .description { font-size: 0.8rem; }
+            .card-title { font-size: 0.95rem; }
+            .card-desc { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header">
+            <h2 class="page-title">关键讨论与安全、可用性开放挑战</h2>
+        </div>
+
+        <div class="grid-content">
+            
+            <div class="left-theory">
+                <div class="theory-node">
+                    <div class="punchline text-gray">可验证安全系统的边界审视</div>
+                    <div class="description">任何分布式安全机制都不存在绝对的银弹。本方案在利用流式选择斩断物理旁窥和爆破空间的同时，也必然在用户侧和系统层引入了全新的工程制约，需要客观评估其安全边界。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-blue">学术诚实性与局限性声明</div>
+                    <div class="description">主动暴露系统局限性并给出清晰、严谨的未来演进路线，是确立方案学术完整性的关键。系统后续将针对“时间溢价、长时过载、强侧信道、隐私合规”四大核心软肋执行下一阶段的迭代深挖。</div>
+                </div>
+            </div>
+
+            <div class="challenge-matrix">
+                
+                <div class="challenge-card">
+                    <div class="card-header-row">
+                        <span class="card-title">时间开销与体验折中</span>
+                        <span class="card-badge badge-amber">可用性局限</span>
+                    </div>
+                    <p class="card-desc">
+                        测试表明，三轮选 4 机制带来了近 20s 的登录延时。部分用户对高频次的连续点击存在排斥，如何在不缩减状态机维度的前提下，压缩前端交互开销是首要痛点。
+                    </p>
+                    <div class="roadmap-tag">🚀 演进: 引入语义故事线(Story Order)引导注册</div>
+                </div>
+
+                <div class="challenge-card">
+                    <div class="card-header-row">
+                        <span class="card-title">长时长效留存认知过载</span>
+                        <span class="card-badge badge-amber">记忆力负荷</span>
+                    </div>
+                    <p class="card-desc">
+                        由于图像池中引入了高相似度干扰项，合法人群在长周期（如跨月）不登录后，识别密码会产生更沉重的记忆负载与更复杂的认知活动，导致留存率发生微跌。
+                    </p>
+                    <div class="roadmap-tag">🚀 演进: 结合用户偏好颜色与特定品类纽带机制</div>
+                </div>
+
+                <div class="challenge-card">
+                    <div class="card-header-row">
+                        <span class="card-title">强侧信道录像攻击防御</span>
+                        <span class="card-badge badge-red">安全边界拓宽</span>
+                    </div>
+                    <p class="card-desc">
+                        当前方案能够完美御物理近距离的“盲眼肩窥”，但如果黑客在 IoT 终端侧或环境上部署了高帧率摄像头进行全量视频录制，多轮级联密码库仍有被穷举逆向的风险。
+                    </p>
+                    <div class="roadmap-tag">🚀 演进: 拓宽至抗视频录像(Video Recording)防御</div>
+                </div>
+
+                <div class="challenge-card">
+                    <div class="card-header-row">
+                        <span class="card-title">IoT存储安全与GDPR合规</span>
+                        <span class="card-badge badge-red">合规性瓶颈</span>
+                    </div>
+                    <p class="card-desc">
+                        图像池在分布式边缘节点和持久化数据库中的存储安全面临挑战。如何防止干扰图

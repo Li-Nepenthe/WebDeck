@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心方案设计 - 多轮认证测试模式 (终极动态真联动版)</title>
+    <style>
+        /* 基础重置与 16:9 标准 PPT 画布物理锁定 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #F4F6F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw; height: 56.25vw; max-width: 1920px; max-height: 1080px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 5% 7%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 顶部页面主标题 */
+        .page-header { z-index: 2; animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-title { color: #111111; font-size: 2.3rem; font-weight: 800; letter-spacing: -0.5px; position: relative; display: inline-block; }
+        .page-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background-color: #0052CC; border-radius: 2px; }
+
+        /* 中部核心非对称栅格 */
+        .grid-content { margin: auto 0; display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; z-index: 2; align-items: center; }
+
+        /* 左侧学术论述 */
+        .left-theory { display: flex; flex-direction: column; gap: 24px; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .theory-node { display: flex; flex-direction: column; gap: 4px; }
+        .punchline { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.2px; }
+        .text-gray { color: #555555; }
+        .text-blue { color: #0052CC; }
+        .description { color: #666666; font-size: 0.9rem; line-height: 1.5; font-weight: 400; }
+
+        /* 右侧：🍏 严格防错位 $4 \times 4$ 认证交互面板 */
+        .auth-console {
+            background: rgba(244, 246, 249, 0.7); border: 1px solid rgba(0, 0, 0, 0.02);
+            border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.005); position: relative;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+        .console-header { display: flex; justify-content: space-between; align-items: center; }
+        .console-title { font-size: 0.95rem; font-weight: 700; color: #111111; }
+        .status-badge { font-size: 0.75rem; font-weight: 600; color: #0052CC; background: rgba(0, 82, 204, 0.06); padding: 3px 8px; border-radius: 4px; transition: all 0.3s; }
+        .badge-fail { color: #FFFFFF; background: #D9383A; }
+        .badge-pass { color: #FFFFFF; background: #10B981; }
+
+        /* 认证矩阵网格：严格限高预防物理越界 */
+        .auth-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            background: #FFFFFF; padding: 10px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01); transition: opacity 0.2s;
+        }
+        .matrix-tile {
+            aspect-ratio: 1; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;
+            display: flex; justify-content: center; align-items: center; font-size: 1.6rem;
+            cursor: pointer; transition: transform 0.2s, border-color 0.2s; user-select: none;
+        }
+        .matrix-tile:hover { transform: scale(1.04); border-color: #CBD5E1; }
+        .tile-active { background-color: rgba(0, 82, 204, 0.02); border-color: #0052CC !important; box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.08); }
+
+        /* 🍏 终极需求：天眼高亮绿色框框。由 JS 根据用户注册的最新密码池进行动态匹配绑定 */
+        .test-secret-highlight {
+            border: 2px solid #10B981 !important;
+            background-color: rgba(16, 185, 129, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        /* 底部动作工具栏 */
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; gap: 16px; }
+        .btn-group { display: flex; gap: 8px; flex-shrink: 0; }
+        
+        .apple-btn { background: #0052CC; color: #FFFFFF; border: none; padding: 6px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .apple-btn:disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
+        .btn-danger { background: #64748B; } 
+        .btn-danger:hover { background: #475569; }
+
+        .console-note { font-size: 0.75rem; color: #555555; line-height: 1.4; border-left: 2px solid #0052CC; padding-left: 8px; width: 100%; }
+
+        /* 彻底拔除 page-footer 流，空出下边缘极其纯净空间 */
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1400px) {
+            .page-title { font-size: 1.6rem; }
+            .punchline { font-size: 1.05rem; }
+            .description { font-size: 0.8rem; }
+            .matrix-tile { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="page-header"><h2 class="page-title">多轮认证流测试模式与状态机审计</h2></div>
+
+        <div class="grid-content">
+            <div class="left-theory">
+                <div class="theory-node">
+                    <div class="punchline text-gray">4 × 4 认证空间缩减</div>
+                    <div class="description">登录认证阶段，系统将输入网格降维压缩至紧凑的 4×4 矩阵，每一轮固定向前端动态刷出 16 张洗牌后的图像（本演示已开启后端凭证测试审计模式）。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-blue">3轮定长输入与噪声模糊</div>
+                    <div class="description">验证流程强制循环进行 3 轮，用户每轮均必须点击选择 4 张图，阻止肩窥者直接记录真实特征。单轮匹配率必须满足 $\ge 75\%$（即命中对 3 张）才判定为 Pass。</div>
+                </div>
+                <div class="theory-node">
+                    <div class="punchline text-gray">天眼审计与延迟判定</div>
+                    <div class="description"><b>🍏 测试提示：</b> 当前页面已内嵌真實的 `LocalStorage` 读取与比对算法，系统将在前端用<b>绿色框框</b>标识出已注册密码。我们在中途点错也绝不弹窗，3 轮结束后才进行全局集中式判定清算。</div>
+                </div>
+            </div>
+
+            <div class="auth-console">
+                <div class="console-header">
+                    <span class="console-title" id="auth-title">Round 1 / 3：请利用绿色提示点选 4 张图</span>
+                    <span class="status-badge" id="auth-counter">已选: 0 / 4</span>
+                </div>
+
+                <div class="auth-grid" id="auth-box"></div>
+
+                <div class="action-bar">
+                    <div class="console-note" id="auth-tip">
+                        <b>💡 现场演示提示：</b> 为了模拟导师测试，已高亮用户选过的凭证。
+                    </div>
+                    <div class="btn-group">
+                        <button class="apple-btn btn-danger" id="clear-db-btn">重新注册</button>
+                        <button class="apple-btn" id="next-round-btn" disabled>提交当前轮</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentRound = 1;
+            let selectedTilesCount = 0;
+            let roundCorrectScores = { 1: 0, 2: 0, 3: 0 };
+            let userSelectedSecretsInRound = []; 
+
+            // 彻底清洗干净的单字符纯净 Emoji 全局混淆项池
+            const distractorsPool = ['🍉', '🌵', '🦖', '🍦', '🍄', '🦉', '🥑', '🍒', '🦁', '🐼', '🥞', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🍳', '🥘', '🍲', '🍿', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🌴', '🌾', '🍀', '🍁', '🍂', '🍃', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍐', '🍑', '🍒', '🥝', '🍇', '🎈', '🎨', '🚀', '🎸'];
+
+            let registerSecretPool = [];
+            
+            const authBox = document.getElementById('auth-box');
+            const authTitle = document.getElementById('auth-title');
+            const authCounter = document.getElementById('auth-counter');
+            const nextBtn = document.getElementById('next-round-btn');
+            const clearDbBtn = document.getElementById('clear-db-btn');
+            const tipBox = document.getElementById('auth-tip');
+
+            // 统一的单字符 Emoji 高精度过滤规则，彻底拔除尾随文本引发的命中 0 Bug
+            function cleanEmoji(str) {
+                const match = str.match(/[\u{1F300}-\u{1F9FF}]/u);
+                return match ? match[0] : str.trim();
+            }
+
+            // 自虚拟盘库异步动态载入真密码
+            function loadSecretsFromDatabase() {
+                const dbString = localStorage.getItem('roundimage_secret_pool');
+                if (dbString) {
+                    registerSecretPool = JSON.parse(dbString).map(e => cleanEmoji(e));
+                } else {
+                    // 无数据时的默认兜底资产（草莓小熊等标准单 Emoji）
+                    registerSecretPool = ['🍓', '🐻', '🥑', '🍩', '🌿', '🐱', '🍇', '🦊', '🍰', '🌻']; 
+                }
+            }
+
+            // 🍏 核心比例装填算法：根据最新拉取的动态密码库，重构 $4 \times 4$ 验证网格并全天候高亮绿框
+            function generateDynamicGrid() {
+                // 依据比例期望值，每轮随机混入 3 或 4 张真密码
+                const targetSecretCount = Math.floor(Math.random() * 2) + 3; 
+                
+                let shuffledSecrets = [...registerSecretPool].sort(() => 0.5 - Math.random());
+                let roundSecrets = shuffledSecrets.slice(0, targetSecretCount);
+
+                // 提取绝对不包含当前最新密码库的干净干扰噪声
+                let currentDistractors = distractorsPool.map(e => cleanEmoji(e))
+                                                        .filter(item => !registerSecretPool.includes(item))
+                                                        .sort(() => 0.5 - Math.random())
+                                                        .slice(0, 16 - targetSecretCount);
+
+                // 混合洗牌并执行物理打散
+                let finalMix = roundSecrets.concat(currentDistractors).sort(() => 0.5 - Math.random());
+
+                authBox.innerHTML = ''; 
+
+                finalMix.forEach(emoji => {
+                    const tile = document.createElement('div');
+                    tile.className = 'matrix-tile';
+                    tile.innerText = emoji;
+
+                    // 🍏 动态追踪高亮：不论轮次和数据集怎么变，只要在密码全集内，立刻用绿框在当前及下一轮死死锁住！
+                    if (registerSecretPool.includes(emoji)) {
+                        tile.classList.add('test-secret-highlight'); 
+                    }
+
+                    tile.onclick = () => {
+                        const emojiChar = cleanEmoji(tile.innerText);
+                        if (tile.classList.contains('tile-active')) {
+                            tile.classList.remove('tile-active');
+                            selectedTilesCount--;
+                            userSelectedSecretsInRound = userSelectedSecretsInRound.filter(item => item !== emojiChar);
+                        } else {
+                            if (selectedTilesCount >= 4) return; // 定长 4 次限制
+                            tile.classList.add('tile-active');
+                            selectedTilesCount++;
+                            userSelectedSecretsInRound.push(emojiChar);
+                        }
+
+                        authCounter.innerText = `已选: ${selectedTilesCount} / 4`;
+                        nextBtn.disabled = (selectedTilesCount !== 4);
+                    };
+
+                    authBox.appendChild(tile);
+                });
+
+                tipBox.innerHTML = `<b>💡 测试模式：</b> 盘库同步成功。本轮已动态装填了 <span style="color:#10B981;font-weight:700;">${targetSecretCount}</span> 张您<b>最新重新注册</b>的密码，均已绿框标识。`;
+            }
+
+            nextBtn.onclick = () => {
+                let currentCorrectMatches = 0;
+                userSelectedSecretsInRound.forEach(e => {
+                    if (registerSecretPool.includes(e)) currentCorrectMatches++;
+                });
+
+                roundCorrectScores[currentRound] = currentCorrectMatches;
+                userSelectedSecretsInRound = []; 
+
+                if (currentRound < 3) {
+                    currentRound++;
+                    selectedTilesCount = 0;
+                    nextBtn.disabled = true;
+                    authTitle.innerText = `Round ${currentRound} / 3：请利用绿色提示点选 4 张图`;
+                    authCounter.innerText = `已选: 0 / 4`;
+                    generateDynamicGrid();
+                } else {
+                    // 3 轮全部跑满，进入集中式全局延迟核验
+                    authBox.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                    clearDbBtn.style.display = 'none'; 
+                    
+                    const totalPass = roundCorrectScores[1] >= 3 && roundCorrectScores[2] >= 3 && roundCorrectScores[3] >= 3;
+                    
+                    if (totalPass) {
+                        authTitle.innerText = "✓ 身份核验通过 (Authenticated)";
+                        authCounter.className = "status-badge badge-pass";
+                        authCounter.innerText = "PASS";
+                        // 🍏 终极需求：登录成功面板原地无缝注入“再试一次”异步回调函数
+                        tipBox.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <div><b>🍏 状态机核验成功：</b> 全量轮次匹配率均满足 $\ge 75\%$ 弹性门槛。<br>验证账目 -> R1 正常: ${roundCorrectScores[1]} | R2 正常: ${roundCorrectScores[2]} | R3 正常: ${roundCorrectScores[3]}</div>
+                                <button id="success-retry-btn" style="background:#10B981; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600; font-size:0.8rem; white-space:nowrap; margin-left:15px;">再试一次</button>
+                            </div>
+                        `;
+                        document.getElementById('success-retry-btn').onclick = resetAndStartStateMachine;
+                    } else {
+                        authTitle.innerText = "✕ 身份核验拒绝 (Access Denied)";
+                        authCounter.className = "status-badge badge-fail";
+                        authCounter.innerText = "FAIL";
+                        tipBox.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <div style="flex-grow:1;"><b>✕ 状态机核验拒绝：</b> 存在轮次未达 $\ge 75\%$ 门槛。<br>验证账目 -> R1 正常: ${roundCorrectScores[1]} | R2 正常: ${roundCorrectScores[2]} | R3 正常: ${roundCorrectScores[3]}</div>
+                                <button id="retry-auth-btn" style="background:#D9383A; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600; font-size:0.8rem; white-space:nowrap; margin-left:15px;">原地重新认证</button>
+                            </div>
+                        `;
+                        document.getElementById('retry-auth-btn').onclick = resetAndStartStateMachine;
+                    }
+                }
+            };
+
+            // 🍏 终极需求：重新注册（清空盘库）按钮点击，真正擦除物理缓存，拒绝脏特征残留
+            clearDbBtn.onclick = () => {
+                localStorage.removeItem('roundimage_secret_pool');
+                alert('✓ 浏览器虚拟密码库已清空！请切回上一页重新建立密码，当前登录页已退回兜底状态。');
+                resetAndStartStateMachine();
+            };
+
+            function resetAndStartStateMachine() {
+                currentRound = 1;
+                selectedTilesCount = 0;
+                roundCorrectScores = { 1: 0, 2: 0, 3: 0 };
+                userSelectedSecretsInRound = [];
+                
+                authBox.style.display = 'grid';
+                nextBtn.style.display = 'block';
+                clearDbBtn.style.display = 'block';
+                nextBtn.disabled = true;
+                
+                authTitle.innerText = `Round 1 / 3：请利用绿色提示点选 4 张图`;
+                authCounter.className = "status-badge";
+                authCounter.innerText = `已选: 0 / 4`;
+                
+                loadSecretsFromDatabase(); // 重新加载可能被更新或清空的数据库
+                generateDynamicGrid();     // 动态高亮矩阵渲染
+            }
+
+            // 初始化首次启动
+            resetAndStartStateMachine();
+        });
+    </script>
+</body>
+</html>

@@ -1085,18 +1085,31 @@ cancelAddPageBtn.addEventListener('click', closeAddPageModal);
 confirmAddPageBtn.addEventListener('click', async () => {
     if (!currentAddPageFolder) return;
     
+    const content = window.htmlEditor ? window.htmlEditor.getValue() : '';
     let filename = addPageName.value.trim();
+    
     if (!filename) {
-        showToast('请输入页面名称', true);
-        return;
+        // 自动从粘贴的 HTML 中提取 <title> 标签作为默认页面名称
+        const titleMatch = content.match(/<title>(.*?)<\/title>/i);
+        let extractedTitle = titleMatch ? titleMatch[1].trim() : '';
+        // 清理操作系统文件名中不合规的字符
+        extractedTitle = extractedTitle.replace(/[\\\/:\*\?"<>\|]/g, '_').trim();
+        if (extractedTitle.length > 50) {
+            extractedTitle = extractedTitle.substring(0, 50).trim();
+        }
+        
+        if (extractedTitle) {
+            filename = extractedTitle;
+        } else {
+            showToast('未输入页面名称且未在 HTML 中检测到 <title> 标签，请手动输入名称', true);
+            return;
+        }
     }
     
     if (!filename.toLowerCase().endsWith('.html')) {
         filename += '.html';
     }
 
-    const content = window.htmlEditor ? window.htmlEditor.getValue() : '';
-    
     const result = await postJson('/api/upload', {
         filename,
         content,
